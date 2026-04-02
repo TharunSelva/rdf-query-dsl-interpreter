@@ -1,0 +1,101 @@
+cabal-version: 2.2
+
+-- This file has been generated from package.yaml by hpack version 0.37.0.
+--
+-- see: https://github.com/sol/hpack
+
+name:           rdf-query-dsl-interpreter
+version:        0.1.0.0
+description:    Alex and Happy project.
+homepage:       https://github.com/TharunSelva/rdf-query-dsl-interpreter#readme
+bug-reports:    https://github.com/TharunSelva/rdf-query-dsl-interpreter/issues
+author:         Tharun Selva, Nicholas Escobar Gomez, Sade Sheikh
+maintainer:     Group 67
+license:        BSD-3-Clause
+license-file:   LICENSE
+build-type:     Simple
+extra-source-files:
+    README.md
+    CHANGELOG.md
+    fixtures/smoke/tiny.expected
+    fixtures/smoke/tiny.rql
+    fixtures/smoke/tiny.ttl
+    docs/report-notes.md
+    docs/sources.md
+
+source-repository head
+  type: git
+  location: https://github.com/TharunSelva/rdf-query-dsl-interpreter
+
+library
+  exposed-modules:
+      RQL.Common.Contracts
+      RQL.Common.Errors
+      RQL.Common.Types
+      RQL.Eval.Builtins
+      RQL.Eval.GraphOps
+      RQL.Eval.Runtime
+      RQL.Syntax.AST
+      RQL.Syntax.Lexer
+      RQL.Syntax.Parser
+      RQL.Turtle.Lexer
+      RQL.Turtle.Loader
+      RQL.Turtle.Parser
+      RQL.Turtle.Render
+  other-modules:
+      Paths_rdf_query_dsl_interpreter
+  autogen-modules:
+      Paths_rdf_query_dsl_interpreter
+  hs-source-dirs:
+      src
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
+  build-depends:
+      array
+    , base >=4.7 && <5
+    , containers
+    , directory
+    , filepath
+    , text
+  default-language: Haskell2010
+  build-tool-depends:
+    alex:alex,
+    happy:happy
+
+executable rdf-query-dsl-interpreter
+  main-is: Main.hs
+  other-modules:
+      Paths_rdf_query_dsl_interpreter
+  autogen-modules:
+      Paths_rdf_query_dsl_interpreter
+  hs-source-dirs:
+      app
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      array
+    , base >=4.7 && <5
+    , containers
+    , directory
+    , filepath
+    , rdf-query-dsl-interpreter
+    , text
+  default-language: Haskell2010
+
+test-suite rdf-query-dsl-interpreter-test
+  type: exitcode-stdio-1.0
+  main-is: SmokeSpec.hs
+  other-modules:
+      Paths_rdf_query_dsl_interpreter
+  autogen-modules:
+      Paths_rdf_query_dsl_interpreter
+  hs-source-dirs:
+      test
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      array
+    , base >=4.7 && <5
+    , containers
+    , directory
+    , filepath
+    , rdf-query-dsl-interpreter
+    , text
+  default-language: Haskell2010
