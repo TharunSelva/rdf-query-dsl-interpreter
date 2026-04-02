@@ -1,0 +1,2 @@
+g = load "tiny"
+print g
