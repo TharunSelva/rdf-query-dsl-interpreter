@@ -2,19 +2,16 @@
 {-# OPTIONS_GHC -w #-}
 module RQL.Turtle.Parser (parseTurtle) where
 
-import RQL.Turtle.Lexer  (Token (..))
-import RQL.Turtle.AST
+import Control.Exception (throw)
+import RQL.Common.Errors (TurtleException (TurtleSyntaxException))
 import RQL.Common.Types  (Literal (..))
+import RQL.Turtle.AST
+import RQL.Turtle.Lexer  (Token (..))
 }
 
 %name      parseTurtle
 %tokentype { Token }
 %error     { parseError }
-
--- ---------------------------------------------------------------------------
--- Token declarations
--- ($$  binds the semantic value; _ is a wildcard for unit-valued tokens)
--- ---------------------------------------------------------------------------
 
 %token
   base     { TokBase }
@@ -30,17 +27,12 @@ import RQL.Common.Types  (Literal (..))
 
 %%
 
--- ---------------------------------------------------------------------------
--- Grammar
--- ---------------------------------------------------------------------------
-
 TurtleDoc :: { TurtleDoc }
-          : Stmts   { TurtleDoc $1 }
+          : RevStmts  { TurtleDoc (reverse $1) }
 
--- Left-recursive list (avoids stack growth on large files)
-Stmts :: { [TStmt] }
-      : {- empty -}   { [] }
-      | Stmts Stmt    { $1 ++ [$2] }
+RevStmts :: { [TStmt] }
+         : {- empty -}    { [] }
+         | RevStmts Stmt  { $2 : $1 }
 
 Stmt :: { TStmt }
      : base iriref '.'          { TBase $2 }
@@ -48,29 +40,27 @@ Stmt :: { TStmt }
      | Triples '.'              { $1 }
 
 Triples :: { TStmt }
-        : Subject PredicateObjectList   { TTriples $1 $2 }
+        : Subject RevPredicateObjectList   { TTriples $1 (reverse $2) }
 
 Subject :: { TSubject }
         : iriref   { TSIri $1 }
         | pname    { uncurry TSPName $1 }
 
--- Left-recursive predicate-object list; ';'-separated
-PredicateObjectList :: { [TPredObjList] }
-    : PredObj                           { [$1] }
-    | PredicateObjectList ';' PredObj   { $1 ++ [$3] }
+RevPredicateObjectList :: { [TPredObjList] }
+    : PredObj                              { [$1] }
+    | RevPredicateObjectList ';' PredObj   { $3 : $1 }
 
 PredObj :: { TPredObjList }
-        : Predicate ObjectList   { ($1, $2) }
+        : Predicate RevObjectList   { ($1, reverse $2) }
 
 Predicate :: { TPred }
           : iriref   { TPIri $1 }
           | pname    { uncurry TPPName $1 }
           | 'a'      { TPA }
 
--- Left-recursive object list; ','-separated
-ObjectList :: { [TObj] }
-    : Obj                  { [$1] }
-    | ObjectList ',' Obj   { $1 ++ [$3] }
+RevObjectList :: { [TObj] }
+    : Obj                     { [$1] }
+    | RevObjectList ',' Obj   { $3 : $1 }
 
 Obj :: { TObj }
     : iriref   { TOIri $1 }
@@ -80,6 +70,8 @@ Obj :: { TObj }
 
 {
 parseError :: [Token] -> a
+parseError [] =
+  throw (TurtleSyntaxException "unexpected end of input")
 parseError ts =
-  error ("Turtle parse error near: " ++ show (take 3 ts))
+  throw (TurtleSyntaxException ("unexpected tokens near " ++ show (take 3 ts)))
 }
