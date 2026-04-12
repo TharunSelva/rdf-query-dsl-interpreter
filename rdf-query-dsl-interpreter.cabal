@@ -38,8 +38,10 @@ library
       RQL.Syntax.AST
       RQL.Syntax.Lexer
       RQL.Syntax.Parser
+      RQL.Turtle.AST
       RQL.Turtle.Lexer
       RQL.Turtle.Loader
+      RQL.Turtle.Lower
       RQL.Turtle.Parser
       RQL.Turtle.Render
   other-modules:

@@ -1,89 +1,85 @@
 {
-module RQL.Turtle.Parser
-  ( parseTurtle
-  , ParseError(..)
-  ) where
+{-# OPTIONS_GHC -w #-}
+module RQL.Turtle.Parser (parseTurtle) where
 
-import RQL.Turtle.Lexer (Token(..))
+import RQL.Turtle.Lexer  (Token (..))
 import RQL.Turtle.AST
+import RQL.Common.Types  (Literal (..))
 }
 
-%name       parseTurtleTokens
-%tokentype  { Token }
-%error      { parseError }
+%name      parseTurtle
+%tokentype { Token }
+%error     { parseError }
+
+-- ---------------------------------------------------------------------------
+-- Token declarations
+-- ($$  binds the semantic value; _ is a wildcard for unit-valued tokens)
+-- ---------------------------------------------------------------------------
 
 %token
-  BASE        { TokBase }
-  PREFIX      { TokPrefix }
-  DOT         { TokDot }
-  SEMI        { TokSemicolon }
-  COMMA       { TokComma }
-  URI         { TokUri $$ }
-  PREFIXED    { TokPrefixed $$ _ }
-  STRING      { TokString $$ }
-  INT         { TokInt $$ }
+  base     { TokBase }
+  prefix   { TokPrefix }
+  'a'      { TokA }
+  iriref   { TokIriRef $$ }
+  pname    { TokPNameLN $$ }
+  strlit   { TokStringLit $$ }
+  intlit   { TokIntLit $$ }
+  '.'      { TokDot }
+  ';'      { TokSemicolon }
+  ','      { TokComma }
 
 %%
 
--- A Turtle document is a sequence of statements
-TurtleDoc :: { TurtleDoc }
-  : Stmts   { TurtleDoc (reverse $1) }
+-- ---------------------------------------------------------------------------
+-- Grammar
+-- ---------------------------------------------------------------------------
 
+TurtleDoc :: { TurtleDoc }
+          : Stmts   { TurtleDoc $1 }
+
+-- Left-recursive list (avoids stack growth on large files)
 Stmts :: { [TStmt] }
-  : {- empty -}    { [] }
-  | Stmts Stmt     { $2 : $1 }
+      : {- empty -}   { [] }
+      | Stmts Stmt    { $1 ++ [$2] }
 
 Stmt :: { TStmt }
-  : BASE URI DOT                      { TBase $2 }
-  | PREFIX PrefixedRaw URI DOT        { let (pre,_) = $2 in TPrefix pre $3 }
-  | Subject PredObjList DOT           { TTriples $1 (reverse $2) }
+     : base iriref '.'          { TBase $2 }
+     | prefix pname iriref '.'  { TPrefix (fst $2) $3 }
+     | Triples '.'              { $1 }
 
-PrefixedRaw :: { (String, String) }
-  : PREFIXED    { $1 }   -- TOKEN already carries (prefix, local) pair
+Triples :: { TStmt }
+        : Subject PredicateObjectList   { TTriples $1 $2 }
 
-Subject :: { Subject }
-  : URI                { SUri $1 }
-  | PrefixedName       { uncurry SPref $1 }
-  | RelUri             { SBaseRel $1 }
+Subject :: { TSubject }
+        : iriref   { TSIri $1 }
+        | pname    { uncurry TSPName $1 }
 
-Predicate :: { Subject }
-  : URI                { SUri $1 }
-  | PrefixedName       { uncurry SPref $1 }
-  | RelUri             { SBaseRel $1 }
+-- Left-recursive predicate-object list; ';'-separated
+PredicateObjectList :: { [TPredObjList] }
+    : PredObj                           { [$1] }
+    | PredicateObjectList ';' PredObj   { $1 ++ [$3] }
 
-RelUri :: { String }
-  : URI   { $1 }
+PredObj :: { TPredObjList }
+        : Predicate ObjectList   { ($1, $2) }
 
-PrefixedName :: { (String, String) }
-  : PREFIXED  { $1 }
+Predicate :: { TPred }
+          : iriref   { TPIri $1 }
+          | pname    { uncurry TPPName $1 }
+          | 'a'      { TPA }
 
-PredObjList :: { [PredObjs] }
-  : PredObjs                      { [$1] }
-  | PredObjList SEMI PredObjs     { $3 : $1 }
-  | PredObjList SEMI              { $1 }
+-- Left-recursive object list; ','-separated
+ObjectList :: { [TObj] }
+    : Obj                  { [$1] }
+    | ObjectList ',' Obj   { $1 ++ [$3] }
 
-PredObjs :: { PredObjs }
-  : Predicate ObjList   { PredObjs $1 (reverse $2) }
-
-ObjList :: { [Obj] }
-  : Obj                 { [$1] }
-  | ObjList COMMA Obj   { $3 : $1 }
-
-Obj :: { Obj }
-  : URI           { OUri $1 }
-  | PrefixedName  { uncurry OPref $1 }
-  | RelUri        { OBaseRel $1 }
-  | STRING        { OStr $1 }
-  | INT           { OInt $1 }
+Obj :: { TObj }
+    : iriref   { TOIri $1 }
+    | pname    { uncurry TOPName $1 }
+    | strlit   { TOLit (LString $1) }
+    | intlit   { TOLit (LInt    $1) }
 
 {
-newtype ParseError = ParseError String deriving (Show)
-
 parseError :: [Token] -> a
-parseError []     = error "Parse error: unexpected end of input"
-parseError (t:_)  = error ("Parse error at token: " ++ show t)
-
-parseTurtle :: [Token] -> Either ParseError TurtleDoc
-parseTurtle tokens =
-  Right (parseTurtleTokens tokens)
+parseError ts =
+  error ("Turtle parse error near: " ++ show (take 3 ts))
 }
