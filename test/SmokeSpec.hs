@@ -62,6 +62,13 @@ renderTests =
         \<http://b.org/s> <http://p.org/p> <http://o.org/o> .\n")
   , pure $ checkPure "render deduplicates identical triples"
       (Set.size (Set.fromList [t1, t1]) == 1)
+  , pure $ checkPure "render orders literals before IRIs when rendered text demands it"
+      (renderGraph (Set.fromList
+          [ Triple (TIri "http://a.org/s") (TIri "http://a.org/p") (TIri "http://z.org/o")
+          , Triple (TIri "http://a.org/s") (TIri "http://a.org/p") (TLit (LString "hello"))
+          ]) ==
+        "<http://a.org/s> <http://a.org/p> \"hello\" .\n\
+        \<http://a.org/s> <http://a.org/p> <http://z.org/o> .\n")
   ]
   where
     t1 = Triple (iriTerm "http://a.org/s") (iriTerm "http://a.org/p") (strTerm "hello")

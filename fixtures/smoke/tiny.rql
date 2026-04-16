@@ -1,2 +1,2 @@
-g = load "tiny"
+let g = load "tiny"
 print g
