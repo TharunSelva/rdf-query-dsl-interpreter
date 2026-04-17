@@ -4,9 +4,9 @@
 - Command-oriented DSL with SPARQL-inspired semantics
 - Coursework Turtle subset only
 - Graph = set of triples
-- Join-like behaviour via shared variables in `match`
-- Final outputs are graphs
-- Fail-fast errors with positions where cheap
+- Pattern matching is expressed through `match`, `filter`, and `construct`.
+- Boolean predicate composition is supported with `&&` and `||`.
+- Part 2 readiness was handled by including orthogonal operations early: `union`, `intersection`, `difference`, boolean predicate composition, and graph construction.
 
 ## Syntax Examples
 
