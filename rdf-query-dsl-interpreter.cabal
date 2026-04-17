@@ -17,9 +17,17 @@ build-type:     Simple
 extra-source-files:
     README.md
     CHANGELOG.md
+    fixtures/smoke/bad_syntax.rql
+    fixtures/smoke/bad_syntax.ttl
+    fixtures/smoke/intlit.ttl
+    fixtures/smoke/keyword_a.ttl
+    fixtures/smoke/objlist.ttl
+    fixtures/smoke/predlist.ttl
+    fixtures/smoke/stronly.ttl
     fixtures/smoke/tiny.expected
     fixtures/smoke/tiny.rql
     fixtures/smoke/tiny.ttl
+    fixtures/smoke/undeclared_prefix.ttl
     docs/report-notes.md
     docs/sources.md
 
