@@ -1,0 +1,4 @@
+let foo = load "foo"
+let bar = load "bar"
+let both = union foo bar
+print both

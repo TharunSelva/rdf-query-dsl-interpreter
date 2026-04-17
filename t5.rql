@@ -1,0 +1,4 @@
+let xyzzy = load "xyzzy"
+let plugh = load "plugh"
+let g = typeInfer(xyzzy, plugh)
+print g

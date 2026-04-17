@@ -1,0 +1,9 @@
+let baz = load "baz"
+let m = match {
+in baz { ?s <http://example.org/ont/hasAge> ?o }
+}
+let a = filter m where (?o >= 21)
+let g = construct {
+?s <http://example.org/ont/hasAge> ?o
+} from a
+print g

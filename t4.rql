@@ -1,0 +1,3 @@
+let quux = load "quux"
+let g = groupmax quux ?s <http://example.org/ont/price>
+print g

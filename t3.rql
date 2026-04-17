@@ -1,0 +1,7 @@
+let qux = load "qux"
+let m = match {
+in qux { ?s ?p ?o }
+}
+let a = filter m where ((?p == <http://example.org/ont/studiesAt> || ?p == <http://example.org/ont/worksFor>) && ?o == <http://example.org/uos>)
+let g = construct { ?s ?p ?o } from a
+print g
