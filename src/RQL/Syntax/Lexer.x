@@ -34,6 +34,8 @@ tokens :-
 "from"         { \_ -> TokFrom }
 "in"           { \_ -> TokIn }
 "groupmax"     { \_ -> TokGroupMax }
+"groupmin"     { \_ -> TokGroupMin }
+"chain"        { \_ -> TokChain }
 "typeInfer"    { \_ -> TokTypeInfer }
 
 -- Literals and references
@@ -78,6 +80,8 @@ data Token
   | TokFrom
   | TokIn
   | TokGroupMax
+  | TokGroupMin
+  | TokChain
   | TokTypeInfer
   | TokVar String
   | TokIriRef String

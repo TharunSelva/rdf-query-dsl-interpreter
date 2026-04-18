@@ -30,6 +30,8 @@ import RQL.Syntax.Lexer (Token (..), alexScanTokens)
   from         { TokFrom }
   in           { TokIn }
   groupmax     { TokGroupMax }
+  groupmin     { TokGroupMin }
+  chain        { TokChain }
   typeInfer    { TokTypeInfer }
   var          { TokVar $$ }
   iriref       { TokIriRef $$ }
@@ -70,6 +72,8 @@ Expr :: { Expr }
   | construct '{' RevTPatterns '}' from Expr
                                   { EConstruct (reverse $3) $6 }
   | groupmax Expr var iriref      { EGroupMax $2 $3 $4 }
+  | groupmin Expr var iriref      { EGroupMin $2 $3 $4 }
+  | chain Expr Expr               { EChain $2 $3 }
   | typeInfer '(' Expr ',' Expr ')' { ETypeInfer $3 $5 }
 
 RevMatchClauses :: { [GraphPattern] }

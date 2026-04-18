@@ -20,6 +20,8 @@ data Expr
   | EFilter Predicate Expr
   | EConstruct [TriplePattern] Expr
   | EGroupMax Expr VarName Iri
+  | EGroupMin Expr VarName Iri
+  | EChain Expr Expr
   | ETypeInfer Expr Expr
   deriving (Eq, Show)
 
