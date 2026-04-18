@@ -68,6 +68,12 @@ evalExpr env store (EConstruct pats e) =
 evalExpr env store (EGroupMax e groupVar maxIri) =
   groupMax groupVar maxIri (evalExpr env store e)
 
+evalExpr env store (EGroupMin e groupVar minIri) =
+  groupMin groupVar minIri (evalExpr env store e)
+
+evalExpr env store (EChain e1 e2) =
+  chainGraphs (evalExpr env store e1) (evalExpr env store e2)
+
 evalExpr env store (ETypeInfer e1 e2) =
   inferTypes (evalExpr env store e1) (evalExpr env store e2)
 

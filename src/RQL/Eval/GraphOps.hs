@@ -50,25 +50,42 @@ instantiateTriple :: TriplePattern -> Binding -> Triple
 instantiateTriple (TriplePattern s p o) b =
   Triple (instantiateTerm s b) (instantiateTerm p b) (instantiateTerm o b)
 
--- GroupMax helper
+-- GroupMax and GroupMin helpers
 
 intValue :: Term -> Int
 intValue (TLit (LInt n)) = n
 intValue t = error ("RQL groupmax: expected integer, got: " ++ show t)
 
-groupMax :: VarName -> Iri -> Graph -> Graph
-groupMax groupVar maxIri triples =
+groupByPredicate :: (Int -> Int -> Bool) -> Iri -> Graph -> Graph
+groupByPredicate cmp iri triples =
   let triplesList = Set.toList triples
       grouped = groupBy sameSubj $ sortBy (comparing subject) triplesList
       keepBest grp =
-        let candidates = filter (\t -> predicate t == TIri maxIri) grp
+        let candidates = filter (\t -> predicate t == TIri iri) grp
         in case candidates of
              [] -> []
-             _  -> [maximumByObj candidates]
+             _  -> [foldr1 (\a b -> if cmp (intValue (object a)) (intValue (object b)) then a else b) candidates]
   in Set.fromList (concatMap keepBest grouped)
-  where
-    sameSubj a b = subject a == subject b
-    maximumByObj = foldr1 (\a b -> if intValue (object a) >= intValue (object b) then a else b)
+  where sameSubj a b = subject a == subject b
+
+groupMax :: VarName -> Iri -> Graph -> Graph
+groupMax _ = groupByPredicate (>=)
+
+groupMin :: VarName -> Iri -> Graph -> Graph
+groupMin _ = groupByPredicate (<=)
+
+-- Chain: compose two graphs along a shared intermediate node.
+-- For each path x -p1-> z in g1 and z -p2-> y in g2, emit x -p2-> y.
+-- This collapses x -> z -> y into x -> y, removing the middle node.
+
+chainGraphs :: Graph -> Graph -> Graph
+chainGraphs g1 g2 =
+  let pairs = [ Triple (subject t1) (predicate t2) (object t2)
+              | t1 <- Set.toList g1
+              , t2 <- Set.toList g2
+              , object t1 == subject t2
+              ]
+  in Set.fromList pairs
 
 -- Type inference
 
