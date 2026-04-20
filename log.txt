@@ -1,3 +1,0 @@
-invalid Turtle input: lexical error
-CallStack (from HasCallStack):
-  error, called at .stack-work/dist/x86_64-linux/ghc-9.4.8/build/RQL/Turtle/Lexer.hs:359:32 in rdf-query-dsl-interpreter-0.1.0.0-LTnJDRxsu148Gy0U6Mn55s:RQL.Turtle.Lexer
