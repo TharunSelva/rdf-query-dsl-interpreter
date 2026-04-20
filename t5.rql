@@ -1,4 +1,4 @@
-let xyzzy = load "xyzzy"
-let plugh = load "plugh"
-let g = typeInfer(xyzzy, plugh)
-print g
+let types = load "xyzzy"
+let subclasses = load "plugh"
+let inferredtypes = typeInfer(types, subclasses)
+print inferredtypes
