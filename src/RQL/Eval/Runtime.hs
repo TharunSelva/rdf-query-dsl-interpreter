@@ -81,7 +81,17 @@ evalExpr env store (ETypeInfer e1 e2) =
 
 -- Statement execution
 
+-- execStmt :: Env -> Store -> Stmt -> (Env, [Graph])
+-- execStmt env store (SLet x e) =
+--   let g = evalExpr env store e
+--   in (extendEnv x (VGraph g) env, [])
+-- execStmt env store (SPrint e) =
+--   let g = evalExpr env store e
+--   in (env, [g])
 execStmt :: Env -> Store -> Stmt -> (Env, [Graph])
+execStmt env _store (SLet _ (ELoad _)) =
+  -- we insert it into the starting environment as it's already preloaded in runProgram
+  (env, [])
 execStmt env store (SLet x e) =
   let g = evalExpr env store e
   in (extendEnv x (VGraph g) env, [])
@@ -89,13 +99,16 @@ execStmt env store (SPrint e) =
   let g = evalExpr env store e
   in (env, [g])
 
-execProgram :: Store -> Program -> [Graph]
-execProgram store (Program stmts) =
-  snd $ foldl step (emptyEnv, []) stmts
+-- execProgram :: Store -> Program -> [Graph]
+-- execProgram store (Program stmts) =
+execProgram :: Env -> Store -> Program -> [Graph]
+execProgram initEnv store (Program stmts) =
+  snd $ foldl step (initEnv, []) stmts
   where
     step (env, acc) stmt =
       let (env', printed) = execStmt env store stmt
       in (env', acc ++ printed)
+
 
 -- IO shell
 
@@ -106,22 +119,18 @@ collectLoads (Program stmts) = concatMap fromStmt stmts
     fromStmt _ = []
 
 runProgram :: Program -> IO (Either RuntimeError Graph)
-runProgram prog@(Program stmts) = do
-  -- Pre-load all graphs
+runProgram prog = do
   loadResults <- mapM loadGraph (collectLoads prog)
   case sequence loadResults of
     Left err -> pure (Left err)
     Right storeList -> do
       let store = Map.fromList storeList
-      -- Build initial env with loaded graphs
       let initEnv = foldl (\e (x, g) -> extendEnv x (VGraph g) e) emptyEnv storeList
-      -- Execute
-      let results = execProgram store prog
-      -- For now, return the last printed graph or empty
+      let results = execProgram initEnv store prog
       pure (Right (if null results then Set.empty else last results))
   where
     loadGraph (x, path) = do
-      result <- parseTurtleFile path
+      result <- parseTurtleFile (path ++ ".ttl")
       case result of
         Left err -> pure (Left (RuntimeError (show err)))
         Right g -> pure (Right (x, g))

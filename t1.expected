@@ -1,0 +1,7 @@
+<http://alpha.example/a> <http://example.org/ont/knows> <http://alpha.example/b> .
+<http://alpha.example/a> <http://example.org/ont/knows> <http://alpha.example/c> .
+<http://beta.example/a> <http://example.org/ont/knows> <http://beta.example/b> .
+<http://beta.example/d> <http://example.org/ont/knows> <http://beta.example/e> .
+
+# Edge case note: foo.ttl includes a duplicate triple,
+# and the expected output does not change because duplicates must be removed.

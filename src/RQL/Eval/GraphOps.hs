@@ -2,8 +2,8 @@ module RQL.Eval.GraphOps where
 
 import qualified Data.Set as Set
 import qualified Data.Map as Map
-import Data.List (nub, sortBy, groupBy)
-import Data.Ord (comparing, Down(..))
+import Data.List (sortBy, groupBy)
+import Data.Ord (comparing)
 import Data.Maybe (mapMaybe)
 
 import RQL.Common.Types
@@ -87,14 +87,29 @@ chainGraphs g1 g2 =
               ]
   in Set.fromList pairs
 
--- Type inference
+-- Type inference for Task 5
 
 rdfType :: Term
 rdfType = TIri "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
 
+rdfsSubClassOf :: Term
+rdfsSubClassOf = TIri "http://www.w3.org/2000/01/rdf-schema#subClassOf"
+
 inferTypes :: Graph -> Graph -> Graph
-inferTypes schema instances =
-  let schemaSubjects = Set.map subject schema
-      relevant = Set.filter (\t -> subject t `elem` schemaSubjects) instances
-      mkTypeTriple t = Triple (subject t) rdfType (predicate t)
-  in Set.fromList (nub (map mkTypeTriple (Set.toList relevant)))
+inferTypes typeGraph subclassGraph =
+  Set.fromList
+    [ Triple subj rdfType superClass
+    | Triple subj predType cls <- Set.toList typeGraph
+    , predType == rdfType
+    , isIriTerm subj
+    , isIriTerm cls
+    , Triple subClass predSub superClass <- Set.toList subclassGraph
+    , predSub == rdfsSubClassOf
+    , cls == subClass
+    , isIriTerm subClass
+    , isIriTerm superClass
+    ]
+  where
+    isIriTerm :: Term -> Bool
+    isIriTerm (TIri _) = True
+    isIriTerm _ = False

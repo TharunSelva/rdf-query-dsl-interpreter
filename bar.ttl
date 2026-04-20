@@ -1,0 +1,5 @@
+@base <http://beta.example/> .
+@prefix ex: <http://example.org/ont/> .
+
+<a> ex:knows <b> .
+<d> ex:knows <e> .
