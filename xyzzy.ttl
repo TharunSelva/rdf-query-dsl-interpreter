@@ -1,0 +1,8 @@
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix ex: <http://example.org/> .
+
+ex:alice rdf:type ex:Student .
+ex:bob rdf:type ex:ResearchStudent .
+
+# Edge case: to test an extra inferred result
+ex:carol rdf:type ex:Student .

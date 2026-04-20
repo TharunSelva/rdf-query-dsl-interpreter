@@ -1,0 +1,5 @@
+<http://example.org/alice> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://example.org/Person> .
+<http://example.org/bob> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://example.org/Student> .
+
+# Edge case: if you uncomment ex:carol rdf:type ex:Student . in xyzzy.ttl:
+<http://example.org/carol> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://example.org/Person> .
