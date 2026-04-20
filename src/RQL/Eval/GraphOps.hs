@@ -8,7 +8,7 @@ import Data.Maybe (mapMaybe)
 
 import RQL.Common.Types
 
--- Graph set operations
+-- Graph operations
 
 graphUnion :: Graph -> Graph -> Graph
 graphUnion = Set.union

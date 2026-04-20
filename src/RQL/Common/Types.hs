@@ -17,8 +17,11 @@ data Term
   | TLit Literal
   deriving (Eq, Ord, Show)
 
-data Triple = Triple Term Term Term
-  deriving (Eq, Ord, Show)
+data Triple = Triple 
+  { subject :: Term
+  , predicate :: Term
+  , object :: Term
+  } deriving (Eq, Ord, Show)
 
 type Graph = Set Triple
 
@@ -31,3 +34,14 @@ data TriplePattern = TriplePattern PatternTerm PatternTerm PatternTerm
   deriving (Eq, Ord, Show)
 
 type Binding = Map VarName Term
+
+type Name = String
+
+type GraphEnv = Map Name Graph
+
+type BindEnv = Map Name [Binding]
+
+data Value
+ = VGraph Graph
+ | VBindings [Binding]
+ deriving (Eq, Ord, Show)
