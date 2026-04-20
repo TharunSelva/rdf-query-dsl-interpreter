@@ -14,24 +14,26 @@ import RQL.Turtle.Loader (parseTurtleFile)
 
 -- Environment and Store
 
-type Env = Map.Map VarName Graph
-type Store = Map.Map GraphName Graph
+type Env = Map.Map Name Value
+type Store = Map.Map Name Graph
 
 emptyEnv :: Env
 emptyEnv = Map.empty
 
-extendEnv :: VarName -> Graph -> Env -> Env
+extendEnv :: Name -> Value -> Env -> Env
 extendEnv = Map.insert
 
-lookupEnv :: VarName -> Env -> Graph
+lookupEnv :: Name -> Env -> Value
 lookupEnv x env = case Map.lookup x env of
-  Just g -> g
+  Just v -> v
   Nothing -> error ("RQL: unbound variable: " ++ x)
 
--- Expression evaluator
+-- Actual interpreter
 
 evalExpr :: Env -> Store -> Expr -> Graph
-evalExpr env _store (EVar x) = lookupEnv x env
+evalExpr env _store (EVar x) = case lookupEnv x env of
+  VGraph g -> g
+  _ -> error ("RQL: variable " ++ x ++ " is not a graph")
 
 evalExpr _env _store (ELoad path) =
   error ("RQL: ELoad requires IO - use runProgram to evaluate: " ++ path)
@@ -82,7 +84,7 @@ evalExpr env store (ETypeInfer e1 e2) =
 execStmt :: Env -> Store -> Stmt -> (Env, [Graph])
 execStmt env store (SLet x e) =
   let g = evalExpr env store e
-  in (extendEnv x g env, [])
+  in (extendEnv x (VGraph g) env, [])
 execStmt env store (SPrint e) =
   let g = evalExpr env store e
   in (env, [g])
@@ -112,7 +114,7 @@ runProgram prog@(Program stmts) = do
     Right storeList -> do
       let store = Map.fromList storeList
       -- Build initial env with loaded graphs
-      let initEnv = foldl (\e (x, g) -> extendEnv x g e) emptyEnv storeList
+      let initEnv = foldl (\e (x, g) -> extendEnv x (VGraph g) e) emptyEnv storeList
       -- Execute
       let results = execProgram store prog
       -- For now, return the last printed graph or empty
