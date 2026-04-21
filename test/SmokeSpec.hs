@@ -945,6 +945,19 @@ runtimeTests =
         ( == "<http://example.org/book1> <http://example.org/ont/price> 15 .\n\
                \<http://example.org/book2> <http://example.org/ont/price> 7 .\n"
         )
+  , checkIO "task 1 root program file runs from project root" $
+      expectProgramFileOutput "t1.rql"
+        ( == "<http://alpha.example/a> <http://example.org/ont/knows> <http://alpha.example/b> .\n\
+               \<http://alpha.example/a> <http://example.org/ont/knows> <http://alpha.example/c> .\n\
+               \<http://beta.example/a> <http://example.org/ont/knows> <http://beta.example/b> .\n\
+               \<http://beta.example/d> <http://example.org/ont/knows> <http://beta.example/e> .\n"
+        )
+  , checkIO "task 5 root program file runs from project root" $
+      expectProgramFileOutput "t5.rql"
+        ( == "<http://example.org/alice> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://example.org/Person> .\n\
+               \<http://example.org/bob> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://example.org/Student> .\n\
+               \<http://example.org/carol> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://example.org/Person> .\n"
+        )
   , checkIO "program file runner resolves sibling Turtle files and returns only canonical output" $ do
       expected <- readFile "fixtures/smoke/task5.expected"
       expectProgramFileOutput "fixtures/smoke/task5.rql" (== expected)
