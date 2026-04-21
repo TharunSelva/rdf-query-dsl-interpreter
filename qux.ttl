@@ -1,0 +1,9 @@
+@base <http://example.org/guy/> .
+@prefix ex: <http://example.org/ont/> .
+
+<Nicolito> ex:studiesAt <http://example.org/uos> .
+<Sade> ex:studiesAt <http://example.org/uos> .
+<Tharun .> ex:studiesAt <http://example.org/uos> .
+<Random> ex:studiesAt <http://example.org/notts> .
+<Anderson Aang> ex:worksFor <http://example.org/uos> .
+<Underson Uung> ex:worksFor <http://example.org/uou> .

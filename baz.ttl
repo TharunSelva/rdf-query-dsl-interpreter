@@ -1,0 +1,10 @@
+@base <http://example.org/ont/> .
+@prefix ex: <http://example.org/ont/> .
+
+<d> ex:knows <19> .
+ex:knows <d> <19> .
+ex:knows <hasAge> 20 .
+ex:knows <hasAge> 2 .
+ex:knows <hasAge> 0 .
+ex:knows <hasAge> 210 .
+ex:knows <hasAge> 21 .
