@@ -1,4 +1,10 @@
-module RQL.Syntax.AST where
+module RQL.Syntax.AST
+  ( Program (..)
+  , Stmt (..)
+  , Expr (..)
+  , GraphPattern (..)
+  , Predicate (..)
+  ) where
 
 import RQL.Common.Types
 
@@ -19,7 +25,7 @@ data Expr
   | EMatch [GraphPattern]
   | EFilter Predicate Expr
   | EConstruct [TriplePattern] Expr
-  | EGroupMax Expr VarName Iri
+  | EGroupMax Expr VarName Term
   | EGroupMin Expr VarName Iri
   | EChain Expr Expr
   | ETypeInfer Expr Expr
@@ -33,7 +39,12 @@ data GraphPattern = GraphPattern
 
 data Predicate
   = PEq PatternTerm PatternTerm
+  | PNe PatternTerm PatternTerm
+  | PLt PatternTerm PatternTerm
+  | PGt PatternTerm PatternTerm
   | PGe PatternTerm PatternTerm
+  | PLe PatternTerm PatternTerm
+  | PNot Predicate
   | PAnd Predicate Predicate
   | POr Predicate Predicate
   deriving (Eq, Show)

@@ -20,17 +20,15 @@ A domain-specific language and interpreter in Haskell for querying and transform
 - Turtle lowering, loading, and canonical rendering
 - DSL lexer and parser
 - DSL AST and `parseProgramFile`
-- smoke tests for Turtle rendering/loading and DSL parsing
+- evaluator/runtime for graph, binding, match, filter, construct, and grouping operations
+- final `.rql` interpreter wiring in `app/Main.hs`
+- smoke tests for Turtle rendering/loading, DSL parsing, and runtime behaviour
 - Part 1 program files:
   - `t1.rql`
   - `t2.rql`
   - `t3.rql`
   - `t4.rql`
   - `t5.rql`
-
-### Still to do
-- Runtime/evaluator implementation in `src/RQL/Eval/`
-- Final `.rql` interpreter wiring in `app/Main.hs`
 
 ## Build and test
 
@@ -42,7 +40,7 @@ stack test
 
 ## Current executable status
 
-`app/Main.hs` is still a temporary harness and is not yet the final `.rql` interpreter entry point.
+`app/Main.hs` is the production entry point for running `.rql` programs from disk.
 
 The intended final run style for the coursework is:
 
@@ -68,12 +66,18 @@ Supported front-end constructs currently include:
 - `filter`
 - `construct`
 - `groupmax`
+- `groupmin`
 - `typeInfer`
 
 Predicate expressions currently support:
 
 - `==`
+- `!=`
+- `<`
+- `>`
+- `<=`
 - `>=`
+- `!`
 - `&&`
 - `||`
 
@@ -122,7 +126,13 @@ print g
 ```rql
 let xyzzy = load "xyzzy"
 let plugh = load "plugh"
-let g = typeInfer(xyzzy, plugh)
+let m = match {
+in xyzzy { ?x <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> ?y }
+in plugh { ?y <http://www.w3.org/2000/01/rdf-schema#subClassOf> ?z }
+}
+let g = construct {
+?x <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> ?z
+} from m
 print g
 ```
 
@@ -130,4 +140,11 @@ print g
 
 - The interpreter is designed around graphs as outputs.
 - Duplicate triples are ignored because graphs are represented as sets of triples.
-- The front end already includes some orthogonal extensions beyond the bare minimum for Part 1, to better support Part 2.
+- `typeInfer` remains available as an extension, but Task 5 can now be expressed through the normal `match` and `construct` path.
+- Ordered comparisons over incompatible values evaluate to `false` rather than failing the whole query.
+- Filter rows with unbound variables evaluate to `false` and are dropped rather than aborting the whole query.
+- Construct rows with missing variables, or with variable-bound literals in subject or predicate position, are skipped rather than aborting the whole query.
+- Binding `difference` is exact whole-binding set subtraction, not anti-join.
+- `groupmax` is implemented for Task 4 as a graph-to-graph operation: it filters by the requested predicate, groups by `?s`, and keeps the maximum integer object per subject.
+- `groupmin` remains available as an extension in the current codebase.
+- There is no special global aggregation bucket; grouping always uses one of `?s`, `?p`, or `?o`.

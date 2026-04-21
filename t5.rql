@@ -1,4 +1,10 @@
 let xyzzy = load "xyzzy"
 let plugh = load "plugh"
-let g = typeInfer(xyzzy, plugh)
+let m = match {
+in xyzzy { ?x <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> ?y }
+in plugh { ?y <http://www.w3.org/2000/01/rdf-schema#subClassOf> ?z }
+}
+let g = construct {
+?x <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> ?z
+} from m
 print g

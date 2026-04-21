@@ -1,6 +1,6 @@
 cabal-version: 2.2
 
--- This file has been generated from package.yaml by hpack version 0.37.0.
+-- This file has been generated from package.yaml by hpack version 0.39.1.
 --
 -- see: https://github.com/sol/hpack
 
@@ -19,17 +19,30 @@ extra-source-files:
     CHANGELOG.md
     fixtures/smoke/bad_syntax.rql
     fixtures/smoke/bad_syntax.ttl
+    fixtures/smoke/binding.ttl
+    fixtures/smoke/grouping.ttl
+    fixtures/smoke/groupmax.ttl
     fixtures/smoke/intlit.ttl
+    fixtures/smoke/join.ttl
     fixtures/smoke/keyword_a.ttl
     fixtures/smoke/objlist.ttl
+    fixtures/smoke/plugh.ttl
     fixtures/smoke/predlist.ttl
     fixtures/smoke/stronly.ttl
+    fixtures/smoke/task5.expected
+    fixtures/smoke/task5.rql
     fixtures/smoke/tiny.expected
     fixtures/smoke/tiny.rql
     fixtures/smoke/tiny.ttl
     fixtures/smoke/undeclared_prefix.ttl
+    fixtures/smoke/xyzzy.ttl
+    docs/full-explainer.html
+    docs/how-i-wrote-each-file.html
+    docs/how-my-code-works.html
     docs/report-notes.md
     docs/sources.md
+    docs/spec-vs-code.html
+    docs/what-i-built.html
 
 source-repository head
   type: git

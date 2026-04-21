@@ -1,0 +1,4 @@
+<http://example.org/alice> <http://example.org/knows> <http://example.org/bob> .
+<http://example.org/carol> <http://example.org/knows> <http://example.org/bob> .
+<http://example.org/bob> <http://example.org/age> 21 .
+<http://example.org/dana> <http://example.org/age> 17 .

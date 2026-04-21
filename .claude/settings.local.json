@@ -1,0 +1,26 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(stack build *)",
+      "Bash(stack test *)",
+      "Bash(where stack *)",
+      "Read(//c/Users/44740/AppData/Local/Programs/**)",
+      "Read(//c/Users/44740/.local/**)",
+      "Read(//e/ghcup/bin//**)",
+      "Read(//c/Users/44740/AppData/Roaming/stack/**)",
+      "Read(//c/Users/44740/AppData/Local/**)",
+      "Read(//c/Users/44740/**)",
+      "Bash(cmd /c \"where stack\")",
+      "Bash(cmd /c \"stack build && stack test\")",
+      "Bash(cmd /c \"stack build 2>&1\")",
+      "Bash(powershell -Command \"Get-Command stack -ErrorAction SilentlyContinue | Select-Object -ExpandProperty Source\")",
+      "Bash(powershell -Command '& { $env:PATH = $env:PATH + '\\\\'';C:\\\\Users\\\\44740\\\\AppData\\\\Roaming\\\\local\\\\bin'\\\\''; Get-Command stack -ErrorAction SilentlyContinue | Select-Object -ExpandProperty Source }')",
+      "Bash(powershell -Command \"Get-ChildItem -Path 'C:\\\\Users\\\\44740' -Filter 'stack.exe' -Recurse -ErrorAction SilentlyContinue -Depth 5 | Select-Object FullName\")",
+      "Bash(powershell -Command \"Get-ChildItem -Path 'C:\\\\ProgramData\\\\chocolatey\\\\bin' -Filter 'stack*' -ErrorAction SilentlyContinue | Select-Object Name\")",
+      "Read(//c/ProgramData/chocolatey/bin//**)",
+      "Bash(grep -v \"\\\\.shim$\")",
+      "Bash(/e/ghcup/bin/cabal build *)",
+      "Bash(/e/ghcup/bin/cabal test *)"
+    ]
+  }
+}

@@ -11,7 +11,7 @@ $digit   = [0-9]
 $nonzero = [1-9]
 $alpha   = [a-zA-Z]
 $alnum   = [a-zA-Z0-9_]
-$irichar = [^ \t\n\r\60\62\\]
+$irichar = [^\32\t\n\r\f\60\62\\]
 $dquote  = [\34]
 $strchar = [^\34\n\\]
 
@@ -39,7 +39,7 @@ tokens :-
 "typeInfer"    { \_ -> TokTypeInfer }
 
 -- Literals and references
-"<" $irichar* ">"        { \s -> TokIriRef (tail (init s)) }
+"<" $irichar+ ">"        { \s -> TokIriRef (tail (init s)) }
 $dquote $strchar* $dquote { \s -> TokStringLit (tail (init s)) }
 
 -- unsigned integers only - no leading 0s except the number 0 itself
@@ -54,7 +54,12 @@ $alpha $alnum*           { \s -> TokIdent s }
 
 -- Operators and punctuation
 ">="                     { \_ -> TokGe }
+"<="                     { \_ -> TokLe }
+"!="                     { \_ -> TokNe }
 "=="                     { \_ -> TokEqEq }
+"<"                      { \_ -> TokLt }
+">"                      { \_ -> TokGt }
+"!"                      { \_ -> TokNot }
 "&&"                     { \_ -> TokAnd }
 "||"                     { \_ -> TokOr }
 "="                      { \_ -> TokEquals }
@@ -94,6 +99,11 @@ data Token
   | TokRParen
   | TokComma
   | TokGe
+  | TokLe
+  | TokLt
+  | TokGt
+  | TokNe
+  | TokNot
   | TokEqEq
   | TokAnd
   | TokOr
