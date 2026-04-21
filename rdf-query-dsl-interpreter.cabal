@@ -1,6 +1,6 @@
 cabal-version: 2.2
 
--- This file has been generated from package.yaml by hpack version 0.39.1.
+-- This file has been generated from package.yaml by hpack version 0.37.0.
 --
 -- see: https://github.com/sol/hpack
 
@@ -36,13 +36,8 @@ extra-source-files:
     fixtures/smoke/tiny.ttl
     fixtures/smoke/undeclared_prefix.ttl
     fixtures/smoke/xyzzy.ttl
-    docs/full-explainer.html
-    docs/how-i-wrote-each-file.html
-    docs/how-my-code-works.html
     docs/report-notes.md
     docs/sources.md
-    docs/spec-vs-code.html
-    docs/what-i-built.html
 
 source-repository head
   type: git
