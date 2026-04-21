@@ -1,4 +1,8 @@
-module RQL.Common.Contracts where
+module RQL.Common.Contracts
+  ( parseTurtleFileContract
+  , parseProgramFileContract
+  , runProgramContract
+  ) where
 
 import RQL.Common.Errors
 import RQL.Common.Types

@@ -1,4 +1,19 @@
-module RQL.Common.Types where
+module RQL.Common.Types
+  ( GraphName
+  , VarName
+  , Iri
+  , Literal (..)
+  , Term (..)
+  , Triple (..)
+  , Graph
+  , PatternTerm (..)
+  , TriplePattern (..)
+  , Binding
+  , Name
+  , GraphEnv
+  , BindEnv
+  , Value (..)
+  ) where
 
 import Data.Map (Map)
 import Data.Set (Set)

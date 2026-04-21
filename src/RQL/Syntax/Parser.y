@@ -44,6 +44,11 @@ import RQL.Syntax.Lexer (Token (..), alexScanTokens)
   ')'          { TokRParen }
   ','          { TokComma }
   '>='         { TokGe }
+  '<='         { TokLe }
+  '<'          { TokLt }
+  '>'          { TokGt }
+  '!='         { TokNe }
+  '!'          { TokNot }
   '=='         { TokEqEq }
   '&&'         { TokAnd }
   '||'         { TokOr }
@@ -71,7 +76,7 @@ Expr :: { Expr }
   | filter Expr where '(' Pred ')' { EFilter $5 $2 }
   | construct '{' RevTPatterns '}' from Expr
                                   { EConstruct (reverse $3) $6 }
-  | groupmax Expr var iriref      { EGroupMax $2 $3 $4 }
+  | groupmax Expr var iriref      { EGroupMax $2 $3 (TIri $4) }
   | groupmin Expr var iriref      { EGroupMin $2 $3 $4 }
   | chain Expr Expr               { EChain $2 $3 }
   | typeInfer '(' Expr ',' Expr ')' { ETypeInfer $3 $5 }
@@ -105,11 +110,19 @@ OrPred :: { Predicate }
   | AndPred                       { $1 }
 
 AndPred :: { Predicate }
-  : AndPred '&&' AtomPred         { PAnd $1 $3 }
+  : AndPred '&&' NotPred          { PAnd $1 $3 }
+  | NotPred                       { $1 }
+
+NotPred :: { Predicate }
+  : '!' NotPred                   { PNot $2 }
   | AtomPred                      { $1 }
 
 AtomPred :: { Predicate }
   : PatTerm '>=' PatTerm          { PGe $1 $3 }
+  | PatTerm '<=' PatTerm          { PLe $1 $3 }
+  | PatTerm '<' PatTerm           { PLt $1 $3 }
+  | PatTerm '>' PatTerm           { PGt $1 $3 }
+  | PatTerm '!=' PatTerm          { PNe $1 $3 }
   | PatTerm '==' PatTerm          { PEq $1 $3 }
   | '(' Pred ')'                  { $2 }
 

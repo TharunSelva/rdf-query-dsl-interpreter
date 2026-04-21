@@ -52,8 +52,8 @@ forceGraph =
   Set.foldl' forceTriple ()
 
 forceTriple :: () -> Triple -> ()
-forceTriple () (Triple subject predicate objectTerm) =
-  forceTerm subject `seq` forceTerm predicate `seq` forceTerm objectTerm
+forceTriple () (Triple tripleSubject triplePredicate tripleObject) =
+  forceTerm tripleSubject `seq` forceTerm triplePredicate `seq` forceTerm tripleObject
 
 forceTerm :: Term -> ()
 forceTerm term =

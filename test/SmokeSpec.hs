@@ -2,9 +2,11 @@ module Main (main) where
 
 import Control.Exception (SomeException, evaluate, try)
 import Control.Monad (forM_, unless)
+import Data.List (isInfixOf)
 import qualified Data.Set as Set
-import RQL.Common.Errors (TurtleError (..), renderTurtleError)
+import RQL.Common.Errors (RuntimeError (..), TurtleError (..), renderTurtleError)
 import RQL.Common.Types
+import RQL.Eval.Runtime (runProgram, runProgramFile)
 import qualified RQL.Syntax.Lexer as SL
 import qualified RQL.Syntax.Parser as SP
 import RQL.Syntax.AST
@@ -110,8 +112,8 @@ turtleTests =
   , checkIO "'a' keyword expands to rdf:type IRI" $
       expectGraph "fixtures/smoke/keyword_a.ttl" $
         any
-          ( \(Triple _ predicate _) ->
-              predicate == TIri "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+          ( \(Triple _ predicateTerm _) ->
+              predicateTerm == TIri "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
           )
           . Set.toList
   , checkIO "string literal (LF-only file)" $
@@ -121,10 +123,10 @@ turtleTests =
         any (\(Triple _ _ objectTerm) -> objectTerm == TLit (LInt 42)) . Set.toList
   , checkIO "base URI resolution (relative IRI)" $
       expectGraph "fixtures/smoke/tiny.ttl" $
-        any (\(Triple subject _ _) -> subject == TIri "http://example.org/a") . Set.toList
+        any (\(Triple subjectTerm _ _) -> subjectTerm == TIri "http://example.org/a") . Set.toList
   , checkIO "prefix expansion (prefixed name to full IRI)" $
       expectGraph "fixtures/smoke/tiny.ttl" $
-        any (\(Triple _ predicate _) -> predicate == TIri "http://example.org/ont/name") . Set.toList
+        any (\(Triple _ predicateTerm _) -> predicateTerm == TIri "http://example.org/ont/name") . Set.toList
   , checkIO "missing files report a file error" $
       expectError "fixtures/smoke/does-not-exist.ttl" $
         \err -> case err of
@@ -154,12 +156,68 @@ syntaxTests =
                , SL.TokStringLit "bar"
                ]
         )
+  , pure $
+      checkPure "dsl lexer extended predicate operators"
+        ( SL.alexScanTokens "?x != ?y && 3 < 4 && 5 > 6 && 7 <= 8 && ! (?x == ?y)"
+            == [ SL.TokVar "x"
+               , SL.TokNe
+               , SL.TokVar "y"
+               , SL.TokAnd
+               , SL.TokIntLit 3
+               , SL.TokLt
+               , SL.TokIntLit 4
+               , SL.TokAnd
+               , SL.TokIntLit 5
+               , SL.TokGt
+               , SL.TokIntLit 6
+               , SL.TokAnd
+               , SL.TokIntLit 7
+               , SL.TokLe
+               , SL.TokIntLit 8
+               , SL.TokAnd
+               , SL.TokNot
+               , SL.TokLParen
+               , SL.TokVar "x"
+               , SL.TokEqEq
+               , SL.TokVar "y"
+               , SL.TokRParen
+               ]
+        )
   , checkIO "dsl parser trivial tiny program" $
       expectProgramText
         "let g = load \"tiny\"\nprint g"
         ( == Program
                [ SLet "g" (ELoad "tiny")
                , SPrint (EVar "g")
+               ]
+        )
+  , checkIO "dsl parser supports not and new comparisons" $
+      expectProgramText
+        "let g = load \"g\"\n\
+        \let m = match {\n\
+        \in g { ?s ?p ?o }\n\
+        \}\n\
+        \let a = filter m where (!(?o <= 21) || ?p != <http://example.org/age>)\n\
+        \let c = construct { ?s ?p ?o } from a\n\
+        \print c\n"
+        ( == Program
+               [ SLet "g" (ELoad "g")
+               , SLet
+                   "m"
+                   (EMatch [GraphPattern "g" (TriplePattern (PVar "s") (PVar "p") (PVar "o"))])
+               , SLet
+                   "a"
+                   ( EFilter
+                       ( POr
+                           (PNot (PLe (PVar "o") (PConst (TLit (LInt 21)))))
+                           (PNe (PVar "p") (PConst (TIri "http://example.org/age")))
+                       )
+                       (EVar "m")
+                   )
+               , SLet
+                   "c"
+                   (EConstruct [TriplePattern (PVar "s") (PVar "p") (PVar "o")] (EVar "a"))
+               , SPrint (EVar "c")
                ]
         )
   , checkIO "dsl parser task 1 program" $
@@ -264,7 +322,7 @@ syntaxTests =
         \print g\n"
         ( == Program
                [ SLet "quux" (ELoad "quux")
-               , SLet "g" (EGroupMax (EVar "quux") "s" "http://example.org/ont/price")
+               , SLet "g" (EGroupMax (EVar "quux") "s" (TIri "http://example.org/ont/price"))
                , SPrint (EVar "g")
                ]
         )
@@ -272,12 +330,46 @@ syntaxTests =
       expectProgramText
         "let xyzzy = load \"xyzzy\"\n\
         \let plugh = load \"plugh\"\n\
-        \let g = typeInfer(xyzzy, plugh)\n\
+        \let m = match {\n\
+        \in xyzzy { ?x <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> ?y }\n\
+        \in plugh { ?y <http://www.w3.org/2000/01/rdf-schema#subClassOf> ?z }\n\
+        \}\n\
+        \let g = construct {\n\
+        \?x <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> ?z\n\
+        \} from m\n\
         \print g\n"
         ( == Program
                [ SLet "xyzzy" (ELoad "xyzzy")
                , SLet "plugh" (ELoad "plugh")
-               , SLet "g" (ETypeInfer (EVar "xyzzy") (EVar "plugh"))
+               , SLet
+                   "m"
+                   ( EMatch
+                       [ GraphPattern
+                           "xyzzy"
+                           ( TriplePattern
+                               (PVar "x")
+                               (PConst (TIri "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"))
+                               (PVar "y")
+                           )
+                       , GraphPattern
+                           "plugh"
+                           ( TriplePattern
+                               (PVar "y")
+                               (PConst (TIri "http://www.w3.org/2000/01/rdf-schema#subClassOf"))
+                               (PVar "z")
+                           )
+                       ]
+                   )
+               , SLet
+                   "g"
+                   ( EConstruct
+                       [ TriplePattern
+                           (PVar "x")
+                           (PConst (TIri "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"))
+                           (PVar "z")
+                       ]
+                       (EVar "m")
+                   )
                , SPrint (EVar "g")
                ]
         )
@@ -288,26 +380,605 @@ syntaxTests =
                , SPrint (EVar "g")
                ]
         )
+  , checkIO "dsl file parser task5.rql uses joined DSL" $
+      expectProgramFile "fixtures/smoke/task5.rql"
+        ( == Program
+               [ SLet "xyzzy" (ELoad "xyzzy")
+               , SLet "plugh" (ELoad "plugh")
+               , SLet
+                   "m"
+                   ( EMatch
+                       [ GraphPattern
+                           "xyzzy"
+                           ( TriplePattern
+                               (PVar "x")
+                               (PConst (TIri "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"))
+                               (PVar "y")
+                           )
+                       , GraphPattern
+                           "plugh"
+                           ( TriplePattern
+                               (PVar "y")
+                               (PConst (TIri "http://www.w3.org/2000/01/rdf-schema#subClassOf"))
+                               (PVar "z")
+                           )
+                       ]
+                   )
+               , SLet
+                   "g"
+                   ( EConstruct
+                       [ TriplePattern
+                           (PVar "x")
+                           (PConst (TIri "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"))
+                           (PVar "z")
+                       ]
+                       (EVar "m")
+                   )
+               , SPrint (EVar "g")
+               ]
+        )
   , checkIO "dsl file parser bad_syntax.rql fails" $
       expectParseFailureFile "fixtures/smoke/bad_syntax.rql"
   ]
 
+runtimeTests :: [IO Result]
+runtimeTests =
+  [ checkIO "task 5 works through joined DSL without typeInfer" $
+      expectProgramRun
+        "let xyzzy = load \"fixtures/smoke/xyzzy\"\n\
+        \let plugh = load \"fixtures/smoke/plugh\"\n\
+        \let m = match {\n\
+        \in xyzzy { ?x <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> ?y }\n\
+        \in plugh { ?y <http://www.w3.org/2000/01/rdf-schema#subClassOf> ?z }\n\
+        \}\n\
+        \let g = construct {\n\
+        \?x <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> ?z\n\
+        \} from m\n\
+        \print g\n"
+        ( == Set.fromList
+               [ Triple
+                   (iriTerm "http://example.org/alice")
+                   (iriTerm "http://www.w3.org/1999/02/22-rdf-syntax-ns#type")
+                   (iriTerm "http://example.org/Person")
+               , Triple
+                   (iriTerm "http://example.org/bob")
+                   (iriTerm "http://www.w3.org/1999/02/22-rdf-syntax-ns#type")
+                   (iriTerm "http://example.org/Person")
+               , Triple
+                   (iriTerm "http://example.org/bob")
+                   (iriTerm "http://www.w3.org/1999/02/22-rdf-syntax-ns#type")
+                   (iriTerm "http://example.org/Worker")
+               , Triple
+                   (iriTerm "http://example.org/carol")
+                   (iriTerm "http://www.w3.org/1999/02/22-rdf-syntax-ns#type")
+                   (iriTerm "http://example.org/Person")
+               , Triple
+                   (iriTerm "http://example.org/carol")
+                   (iriTerm "http://www.w3.org/1999/02/22-rdf-syntax-ns#type")
+                   (iriTerm "http://example.org/Worker")
+               ]
+        )
+  , checkIO "variables named x y z flow through join/filter/construct" $
+      expectProgramRun
+        "let g = load \"fixtures/smoke/join\"\n\
+        \let m = match {\n\
+        \in g { ?x <http://example.org/knows> ?y }\n\
+        \in g { ?y <http://example.org/age> ?z }\n\
+        \}\n\
+        \let a = filter m where (?z >= 21)\n\
+        \let c = construct { ?x <http://example.org/seenBy> ?y } from a\n\
+        \print c\n"
+        ( == Set.fromList
+               [ Triple
+                   (iriTerm "http://example.org/alice")
+                   (iriTerm "http://example.org/seenBy")
+                   (iriTerm "http://example.org/bob")
+               , Triple
+                   (iriTerm "http://example.org/carol")
+                   (iriTerm "http://example.org/seenBy")
+                   (iriTerm "http://example.org/bob")
+               ]
+        )
+  , checkIO "multi pattern join produces shared variable bindings" $
+      expectProgramRun
+        "let g = load \"fixtures/smoke/join\"\n\
+        \let m = match {\n\
+        \in g { ?x <http://example.org/knows> ?y }\n\
+        \in g { ?y <http://example.org/age> ?z }\n\
+        \}\n\
+        \let c = construct { ?x <http://example.org/seenBy> ?z } from m\n\
+        \print c\n"
+        ( == Set.fromList
+               [ Triple
+                   (iriTerm "http://example.org/alice")
+                   (iriTerm "http://example.org/seenBy")
+                   (intTerm 21)
+               , Triple
+                   (iriTerm "http://example.org/carol")
+                   (iriTerm "http://example.org/seenBy")
+                   (intTerm 21)
+               ]
+        )
+  , checkIO "three clause join preserves shared-variable agreement" $
+      expectProgramRun
+        "let g = load \"fixtures/smoke/join\"\n\
+        \let h = load \"fixtures/smoke/binding\"\n\
+        \let m = match {\n\
+        \in g { ?x <http://example.org/knows> ?y }\n\
+        \in h { ?x <http://example.org/knows> ?x }\n\
+        \in g { ?y <http://example.org/age> ?z }\n\
+        \}\n\
+        \let c = construct { ?x <http://example.org/link> ?z } from m\n\
+        \print c\n"
+        ( == Set.singleton
+               ( Triple
+                   (iriTerm "http://example.org/alice")
+                   (iriTerm "http://example.org/link")
+                   (intTerm 21)
+               )
+        )
+  , checkIO "repeated variables must match the same term" $
+      expectProgramRun
+        "let g = load \"fixtures/smoke/binding\"\n\
+        \let m = match {\n\
+        \in g { ?node <http://example.org/knows> ?node }\n\
+        \}\n\
+        \let c = construct { ?node <http://example.org/seenBy> ?node } from m\n\
+        \print c\n"
+        ( == Set.singleton
+               ( Triple
+                   (iriTerm "http://example.org/alice")
+                   (iriTerm "http://example.org/seenBy")
+                   (iriTerm "http://example.org/alice")
+               )
+        )
+  , checkIO "empty match result constructs an empty graph" $
+      expectProgramOutput
+        "let g = load \"fixtures/smoke/join\"\n\
+        \let m = match {\n\
+        \in g { ?x <http://example.org/missing> ?y }\n\
+        \}\n\
+        \let c = construct { ?x <http://example.org/seenBy> ?y } from m\n\
+        \print c\n"
+        (== "")
+  , checkIO "construct from joined bindings deduplicates duplicate templates" $
+      expectProgramRun
+        "let g = load \"fixtures/smoke/join\"\n\
+        \let m = match {\n\
+        \in g { ?x <http://example.org/knows> ?y }\n\
+        \in g { ?y <http://example.org/age> ?z }\n\
+        \}\n\
+        \let c = construct {\n\
+        \?x <http://example.org/seenBy> ?z\n\
+        \?x <http://example.org/seenBy> ?z\n\
+        \} from m\n\
+        \print c\n"
+        ( == Set.fromList
+               [ Triple
+                   (iriTerm "http://example.org/alice")
+                   (iriTerm "http://example.org/seenBy")
+                   (intTerm 21)
+               , Triple
+                   (iriTerm "http://example.org/carol")
+                   (iriTerm "http://example.org/seenBy")
+                   (intTerm 21)
+               ]
+        )
+  , checkIO "match can consume a derived graph value" $
+      expectProgramRun
+        "let left = load \"fixtures/smoke/join\"\n\
+        \let right = load \"fixtures/smoke/binding\"\n\
+        \let both = union left right\n\
+        \let m = match {\n\
+        \in both { ?x <http://example.org/knows> ?y }\n\
+        \}\n\
+        \let c = construct { ?x <http://example.org/knows> ?y } from m\n\
+        \print c\n"
+        ( == Set.fromList
+               [ Triple
+                   (iriTerm "http://example.org/alice")
+                   (iriTerm "http://example.org/knows")
+                   (iriTerm "http://example.org/alice")
+               , Triple
+                   (iriTerm "http://example.org/alice")
+                   (iriTerm "http://example.org/knows")
+                   (iriTerm "http://example.org/bob")
+               , Triple
+                   (iriTerm "http://example.org/carol")
+                   (iriTerm "http://example.org/knows")
+                   (iriTerm "http://example.org/bob")
+               ]
+        )
+  , checkIO "filter drops rows with missing variables instead of failing" $
+      expectProgramRun
+        "let left = load \"fixtures/smoke/join\"\n\
+        \let right = load \"fixtures/smoke/join\"\n\
+        \let m1 = match {\n\
+        \in left { ?x <http://example.org/knows> ?y }\n\
+        \}\n\
+        \let m2 = match {\n\
+        \in right { ?x <http://example.org/age> ?z }\n\
+        \}\n\
+        \let both = union m1 m2\n\
+        \let a = filter both where (?y == <http://example.org/bob>)\n\
+        \let c = construct { ?x <http://example.org/seenBy> ?y } from a\n\
+        \print c\n"
+        ( == Set.fromList
+               [ Triple
+                   (iriTerm "http://example.org/alice")
+                   (iriTerm "http://example.org/seenBy")
+                   (iriTerm "http://example.org/bob")
+               , Triple
+                   (iriTerm "http://example.org/carol")
+                   (iriTerm "http://example.org/seenBy")
+                   (iriTerm "http://example.org/bob")
+               ]
+        )
+  , checkIO "construct drops rows with missing variables instead of failing" $
+      expectProgramRun
+        "let left = load \"fixtures/smoke/join\"\n\
+        \let right = load \"fixtures/smoke/join\"\n\
+        \let m1 = match {\n\
+        \in left { ?x <http://example.org/knows> ?y }\n\
+        \}\n\
+        \let m2 = match {\n\
+        \in right { ?x <http://example.org/age> ?z }\n\
+        \}\n\
+        \let both = union m1 m2\n\
+        \let c = construct { ?x <http://example.org/seenBy> ?y } from both\n\
+        \print c\n"
+        ( == Set.fromList
+               [ Triple
+                   (iriTerm "http://example.org/alice")
+                   (iriTerm "http://example.org/seenBy")
+                   (iriTerm "http://example.org/bob")
+               , Triple
+                   (iriTerm "http://example.org/carol")
+                   (iriTerm "http://example.org/seenBy")
+                   (iriTerm "http://example.org/bob")
+               ]
+        )
+  , checkIO "construct drops rows where variable subject becomes a literal" $
+      expectProgramOutput
+        "let g = load \"fixtures/smoke/join\"\n\
+        \let m = match {\n\
+        \in g { ?s <http://example.org/age> ?o }\n\
+        \}\n\
+        \let c = construct { ?o <http://example.org/tagged> ?s } from m\n\
+        \print c\n"
+        (== "")
+  , checkIO "union works on bindings as well as graphs" $
+      expectProgramRun
+        "let left = load \"fixtures/smoke/join\"\n\
+        \let right = load \"fixtures/smoke/binding\"\n\
+        \let m1 = match {\n\
+        \in left { ?x <http://example.org/knows> ?y }\n\
+        \}\n\
+        \let m2 = match {\n\
+        \in right { ?x <http://example.org/knows> ?y }\n\
+        \}\n\
+        \let both = union m1 m2\n\
+        \let c = construct { ?x <http://example.org/knows> ?y } from both\n\
+        \print c\n"
+        ( == Set.fromList
+               [ Triple
+                   (iriTerm "http://example.org/alice")
+                   (iriTerm "http://example.org/knows")
+                   (iriTerm "http://example.org/alice")
+               , Triple
+                   (iriTerm "http://example.org/alice")
+                   (iriTerm "http://example.org/knows")
+                   (iriTerm "http://example.org/bob")
+               , Triple
+                   (iriTerm "http://example.org/carol")
+                   (iriTerm "http://example.org/knows")
+                   (iriTerm "http://example.org/bob")
+               ]
+        )
+  , checkIO "binding difference is exact set subtraction, not anti-join" $
+      expectProgramRun
+        "let g = load \"fixtures/smoke/join\"\n\
+        \let left = match {\n\
+        \in g { ?x <http://example.org/knows> ?y }\n\
+        \}\n\
+        \let right = match {\n\
+        \in g { ?x <http://example.org/knows> <http://example.org/bob> }\n\
+        \}\n\
+        \let diff = difference left right\n\
+        \let c = construct { ?x <http://example.org/knows> ?y } from diff\n\
+        \print c\n"
+        ( == Set.fromList
+               [ Triple
+                   (iriTerm "http://example.org/alice")
+                   (iriTerm "http://example.org/knows")
+                   (iriTerm "http://example.org/bob")
+               , Triple
+                   (iriTerm "http://example.org/carol")
+                   (iriTerm "http://example.org/knows")
+                   (iriTerm "http://example.org/bob")
+               ]
+        )
+  , checkIO "!=" $
+      expectProgramRun
+        "let left = load \"fixtures/smoke/join\"\n\
+        \let right = load \"fixtures/smoke/binding\"\n\
+        \let both = union left right\n\
+        \let m = match {\n\
+        \in both { ?x <http://example.org/knows> ?y }\n\
+        \}\n\
+        \let a = filter m where (?x != ?y)\n\
+        \let c = construct { ?x <http://example.org/knows> ?y } from a\n\
+        \print c\n"
+        ( == Set.fromList
+               [ Triple
+                   (iriTerm "http://example.org/alice")
+                   (iriTerm "http://example.org/knows")
+                   (iriTerm "http://example.org/bob")
+               , Triple
+                   (iriTerm "http://example.org/carol")
+                   (iriTerm "http://example.org/knows")
+                   (iriTerm "http://example.org/bob")
+               ]
+        )
+  , checkIO "< on integers" $
+      expectProgramRun
+        "let g = load \"fixtures/smoke/join\"\n\
+        \let m = match {\n\
+        \in g { ?s <http://example.org/age> ?o }\n\
+        \}\n\
+        \let a = filter m where (?o < 21)\n\
+        \let c = construct { ?s <http://example.org/age> ?o } from a\n\
+        \print c\n"
+        ( == Set.singleton
+               ( Triple
+                   (iriTerm "http://example.org/dana")
+                   (iriTerm "http://example.org/age")
+                   (intTerm 17)
+               )
+        )
+  , checkIO "> on integers" $
+      expectProgramRun
+        "let g = load \"fixtures/smoke/join\"\n\
+        \let m = match {\n\
+        \in g { ?s <http://example.org/age> ?o }\n\
+        \}\n\
+        \let a = filter m where (?o > 17)\n\
+        \let c = construct { ?s <http://example.org/age> ?o } from a\n\
+        \print c\n"
+        ( == Set.singleton
+               ( Triple
+                   (iriTerm "http://example.org/bob")
+                   (iriTerm "http://example.org/age")
+                   (intTerm 21)
+               )
+        )
+  , checkIO "<= on integers" $
+      expectProgramRun
+        "let g = load \"fixtures/smoke/join\"\n\
+        \let m = match {\n\
+        \in g { ?s <http://example.org/age> ?o }\n\
+        \}\n\
+        \let a = filter m where (?o <= 21)\n\
+        \let c = construct { ?s <http://example.org/age> ?o } from a\n\
+        \print c\n"
+        ( == Set.fromList
+               [ Triple
+                   (iriTerm "http://example.org/bob")
+                   (iriTerm "http://example.org/age")
+                   (intTerm 21)
+               , Triple
+                   (iriTerm "http://example.org/dana")
+                   (iriTerm "http://example.org/age")
+                   (intTerm 17)
+               ]
+        )
+  , checkIO "logical not on a predicate" $
+      expectProgramRun
+        "let g = load \"fixtures/smoke/join\"\n\
+        \let m = match {\n\
+        \in g { ?s <http://example.org/age> ?o }\n\
+        \}\n\
+        \let a = filter m where (!(?o < 21))\n\
+        \let c = construct { ?s <http://example.org/age> ?o } from a\n\
+        \print c\n"
+        ( == Set.singleton
+               ( Triple
+                   (iriTerm "http://example.org/bob")
+                   (iriTerm "http://example.org/age")
+                   (intTerm 21)
+               )
+        )
+  , checkIO "!(?x == ...)" $
+      expectProgramRun
+        "let g = load \"fixtures/smoke/join\"\n\
+        \let m = match {\n\
+        \in g { ?s <http://example.org/age> ?o }\n\
+        \}\n\
+        \let a = filter m where (!(?s == <http://example.org/dana>))\n\
+        \let c = construct { ?s <http://example.org/age> ?o } from a\n\
+        \print c\n"
+        ( == Set.singleton
+               ( Triple
+                   (iriTerm "http://example.org/bob")
+                   (iriTerm "http://example.org/age")
+                   (intTerm 21)
+               )
+        )
+  , checkIO "invalid ordered comparisons are safe and just filter out rows" $
+      expectProgramOutput
+        "let g = load \"fixtures/smoke/tiny\"\n\
+        \let m = match {\n\
+        \in g { ?s ?p ?o }\n\
+        \}\n\
+        \let a = filter m where (?o >= 21)\n\
+        \let c = construct { ?s ?p ?o } from a\n\
+        \print c\n"
+        (== "")
+  , checkIO "construct rejects literal subjects" $
+      expectProgramErrorContains
+        "let g = load \"fixtures/smoke/join\"\n\
+        \let m = match {\n\
+        \in g { ?x <http://example.org/knows> ?y }\n\
+        \}\n\
+        \let c = construct { \"bad\" <http://example.org/seenBy> ?y } from m\n\
+        \print c\n"
+        "subject must be an IRI"
+  , checkIO "construct rejects literal predicates" $
+      expectProgramErrorContains
+        "let g = load \"fixtures/smoke/join\"\n\
+        \let m = match {\n\
+        \in g { ?x <http://example.org/knows> ?y }\n\
+        \}\n\
+        \let c = construct { ?x \"bad\" ?y } from m\n\
+        \print c\n"
+        "predicate must be an IRI"
+  , checkIO "task 1 style union still works" $
+      expectProgramRun
+        "let left = load \"fixtures/smoke/join\"\n\
+        \let right = load \"fixtures/smoke/binding\"\n\
+        \let both = union left right\n\
+        \print both\n"
+        ( == Set.fromList
+               [ Triple (iriTerm "http://example.org/alice") (iriTerm "http://example.org/knows") (iriTerm "http://example.org/alice")
+               , Triple (iriTerm "http://example.org/alice") (iriTerm "http://example.org/knows") (iriTerm "http://example.org/bob")
+               , Triple (iriTerm "http://example.org/bob") (iriTerm "http://example.org/age") (intTerm 21)
+               , Triple (iriTerm "http://example.org/carol") (iriTerm "http://example.org/knows") (iriTerm "http://example.org/bob")
+               , Triple (iriTerm "http://example.org/dana") (iriTerm "http://example.org/age") (intTerm 17)
+               ]
+        )
+  , checkIO "task 2 style program still works" $
+      expectProgramRun
+        "let g = load \"fixtures/smoke/join\"\n\
+        \let m = match {\n\
+        \in g { ?s <http://example.org/age> ?o }\n\
+        \}\n\
+        \let a = filter m where (?o >= 21)\n\
+        \let c = construct { ?s <http://example.org/age> ?o } from a\n\
+        \print c\n"
+        ( == Set.singleton
+               ( Triple
+                   (iriTerm "http://example.org/bob")
+                   (iriTerm "http://example.org/age")
+                   (intTerm 21)
+               )
+        )
+  , checkIO "task 3 style program still works" $
+      expectProgramRun
+        "let g = load \"fixtures/smoke/join\"\n\
+        \let m = match {\n\
+        \in g { ?s ?p ?o }\n\
+        \}\n\
+        \let c = construct { ?s ?p ?o } from m\n\
+        \print c\n"
+        ( == Set.fromList
+               [ Triple (iriTerm "http://example.org/alice") (iriTerm "http://example.org/knows") (iriTerm "http://example.org/bob")
+               , Triple (iriTerm "http://example.org/bob") (iriTerm "http://example.org/age") (intTerm 21)
+               , Triple (iriTerm "http://example.org/carol") (iriTerm "http://example.org/knows") (iriTerm "http://example.org/bob")
+               , Triple (iriTerm "http://example.org/dana") (iriTerm "http://example.org/age") (intTerm 17)
+               ]
+        )
+  , checkIO "task 4 style groupmax keeps max integer price per subject" $
+      expectProgramRun
+        "let quux = load \"quux\"\n\
+        \let g = groupmax quux ?s <http://example.org/ont/price>\n\
+        \print g\n"
+        ( == Set.fromList
+               [ Triple
+                   (iriTerm "http://example.org/book1")
+                   (iriTerm "http://example.org/ont/price")
+                   (intTerm 15)
+               , Triple
+                   (iriTerm "http://example.org/book2")
+                   (iriTerm "http://example.org/ont/price")
+                   (intTerm 7)
+               ]
+        )
+  , checkIO "groupmax ignores non matching predicates" $
+      expectProgramOutput
+        "let quux = load \"quux\"\n\
+        \let g = groupmax quux ?s <http://example.org/ont/price>\n\
+        \print g\n"
+        ( \output ->
+            not ("<http://example.org/ont/name>" `isInfixOf` output)
+              && output
+              == "<http://example.org/book1> <http://example.org/ont/price> 15 .\n\
+                 \<http://example.org/book2> <http://example.org/ont/price> 7 .\n"
+        )
+  , checkIO "groupmax output is unchanged by duplicate input triples" $
+      expectProgramOutput
+        "let quux = load \"quux\"\n\
+        \let g = groupmax quux ?s <http://example.org/ont/price>\n\
+        \print g\n"
+        ( == "<http://example.org/book1> <http://example.org/ont/price> 15 .\n\
+               \<http://example.org/book2> <http://example.org/ont/price> 7 .\n"
+        )
+  , checkIO "groupmin over integers still works" $
+      expectProgramRun
+        "let g = load \"fixtures/smoke/grouping\"\n\
+        \let m = groupmin g ?s <http://example.org/ont/price>\n\
+        \print m\n"
+        ( == Set.fromList
+               [ Triple
+                   (iriTerm "http://example.org/book1")
+                   (iriTerm "http://example.org/ont/price")
+                   (intTerm 10)
+               , Triple
+                   (iriTerm "http://example.org/book2")
+                   (iriTerm "http://example.org/ont/price")
+                   (intTerm 7)
+               ]
+        )
+  , checkIO "groupmax requires integer objects for the selected predicate" $
+      expectProgramErrorContains
+        "let g = load \"fixtures/smoke/grouping\"\n\
+        \let m = groupmax g ?s <http://example.org/ont/name>\n\
+        \print m\n"
+        "expected an integer object"
+  , checkIO "groupmax rejects grouping variables other than ?s" $
+      expectProgramErrorContains
+        "let g = load \"fixtures/smoke/grouping\"\n\
+        \let m = groupmax g ?p <http://example.org/ont/price>\n\
+        \print m\n"
+        "only supports grouping by ?s"
+  , checkIO "task 4 program file resolves sibling quux.ttl and returns canonical output" $
+      expectProgramFileOutput "t4.rql"
+        ( == "<http://example.org/book1> <http://example.org/ont/price> 15 .\n\
+               \<http://example.org/book2> <http://example.org/ont/price> 7 .\n"
+        )
+  , checkIO "task 1 root program file runs from project root" $
+      expectProgramFileOutput "t1.rql"
+        ( == "<http://alpha.example/a> <http://example.org/ont/knows> <http://alpha.example/b> .\n\
+               \<http://alpha.example/a> <http://example.org/ont/knows> <http://alpha.example/c> .\n\
+               \<http://beta.example/a> <http://example.org/ont/knows> <http://beta.example/b> .\n\
+               \<http://beta.example/d> <http://example.org/ont/knows> <http://beta.example/e> .\n"
+        )
+  , checkIO "task 5 root program file runs from project root" $
+      expectProgramFileOutput "t5.rql"
+        ( == "<http://example.org/alice> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://example.org/Person> .\n\
+               \<http://example.org/bob> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://example.org/Student> .\n\
+               \<http://example.org/carol> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://example.org/Person> .\n"
+        )
+  , checkIO "program file runner resolves sibling Turtle files and returns only canonical output" $ do
+      expected <- readFile "fixtures/smoke/task5.expected"
+      expectProgramFileOutput "fixtures/smoke/task5.rql" (== expected)
+  ]
+
 expectGraph :: FilePath -> (Graph -> Bool) -> IO Bool
-expectGraph path predicate = do
+expectGraph path check = do
   result <- parseTurtleFile path
   case result of
     Left err -> do
       printErr err
       pure False
     Right graph ->
-      pure (predicate graph)
+      pure (check graph)
 
 expectError :: FilePath -> (TurtleError -> Bool) -> IO Bool
-expectError path predicate = do
+expectError path check = do
   result <- parseTurtleFile path
   case result of
     Left err ->
-      pure (predicate err)
+      pure (check err)
     Right _ ->
       pure False
 
@@ -320,24 +991,24 @@ parseProgramText src = do
       Right program -> Right program
 
 expectProgramText :: String -> (Program -> Bool) -> IO Bool
-expectProgramText src predicate = do
+expectProgramText src check = do
   result <- parseProgramText src
   case result of
     Left msg -> do
       putStrLn ("    parse error: " ++ msg)
       pure False
     Right program ->
-      pure (predicate program)
+      pure (check program)
 
 expectProgramFile :: FilePath -> (Program -> Bool) -> IO Bool
-expectProgramFile path predicate = do
+expectProgramFile path check = do
   result <- SP.parseProgramFile path
   case result of
     Left err -> do
       putStrLn ("    parse error: " ++ show err)
       pure False
     Right program ->
-      pure (predicate program)
+      pure (check program)
 
 expectParseFailureFile :: FilePath -> IO Bool
 expectParseFailureFile path = do
@@ -345,6 +1016,64 @@ expectParseFailureFile path = do
   case result of
     Left _ -> pure True
     Right _ -> pure False
+
+expectProgramRun :: String -> (Graph -> Bool) -> IO Bool
+expectProgramRun src check = do
+  result <- parseProgramText src
+  case result of
+    Left msg -> do
+      putStrLn ("    parse error: " ++ msg)
+      pure False
+    Right program -> do
+      runResult <- runProgram program
+      case runResult of
+        Left err -> do
+          putStrLn ("    runtime error: " ++ show err)
+          pure False
+        Right graph ->
+          pure (check graph)
+
+expectProgramOutput :: String -> (String -> Bool) -> IO Bool
+expectProgramOutput src check = do
+  result <- parseProgramText src
+  case result of
+    Left msg -> do
+      putStrLn ("    parse error: " ++ msg)
+      pure False
+    Right program -> do
+      runResult <- runProgram program
+      case runResult of
+        Left err -> do
+          putStrLn ("    runtime error: " ++ show err)
+          pure False
+        Right graph ->
+          pure (check (renderGraph graph))
+
+expectProgramErrorContains :: String -> String -> IO Bool
+expectProgramErrorContains src expectedFragment = do
+  result <- parseProgramText src
+  case result of
+    Left msg -> do
+      putStrLn ("    parse error: " ++ msg)
+      pure False
+    Right program -> do
+      runResult <- runProgram program
+      case runResult of
+        Left (RuntimeError msg) ->
+          pure (expectedFragment `isInfixOf` msg)
+        Right graph -> do
+          putStrLn ("    unexpected graph: " ++ renderGraph graph)
+          pure False
+
+expectProgramFileOutput :: FilePath -> (String -> Bool) -> IO Bool
+expectProgramFileOutput path check = do
+  result <- runProgramFile path
+  case result of
+    Left msg -> do
+      putStrLn ("    file runner error: " ++ msg)
+      pure False
+    Right output ->
+      pure (check output)
 
 printErr :: TurtleError -> IO ()
 printErr err = putStrLn ("    error: " ++ renderTurtleError err)
@@ -357,3 +1086,5 @@ main = do
   runTests turtleTests
   putStrLn "=== SyntaxSpec ==="
   runTests syntaxTests
+  putStrLn "=== RuntimeSpec ==="
+  runTests runtimeTests
