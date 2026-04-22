@@ -4,7 +4,6 @@ module RQL.Syntax.Parser
   , parseProgramFile
   ) where
 
--- import Control.Exception (SomeException, displayException, evaluate, try)
 import Control.Exception (IOException, SomeException, displayException, evaluate, try)
 import RQL.Common.Errors (ParseError (..))
 import RQL.Common.Types
