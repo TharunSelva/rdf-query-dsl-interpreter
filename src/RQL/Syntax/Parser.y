@@ -4,7 +4,8 @@ module RQL.Syntax.Parser
   , parseProgramFile
   ) where
 
-import Control.Exception (SomeException, displayException, evaluate, try)
+-- import Control.Exception (SomeException, displayException, evaluate, try)
+import Control.Exception (IOException, SomeException, displayException, evaluate, try)
 import RQL.Common.Errors (ParseError (..))
 import RQL.Common.Types
 import RQL.Syntax.AST
@@ -126,24 +127,47 @@ AtomPred :: { Predicate }
   | PatTerm '==' PatTerm          { PEq $1 $3 }
   | '(' Pred ')'                  { $2 }
 
+
 {
+-- previous parse error:
+-- parseError :: [Token] -> a
+-- parseError _ = error "Program parse error"
 parseError :: [Token] -> a
 parseError [] =
   error "RQL parse error: unexpected end of input"
 parseError ts =
   error ("RQL parse error near: " ++ show (take 3 ts))
 
+
+-- prev version:
+-- parseProgramFile :: FilePath -> IO (Either ParseError Program)
+-- parseProgramFile path = do
+--   contents <- readFile path
+--   let tokens = alexScanTokens contents
+--   pure (Right (parseProgram tokens))
+
+
 parseProgramFile :: FilePath -> IO (Either ParseError Program)
 parseProgramFile path = do
-  result <- (try $ do
-    contents <- readFile path
-    let tokens = alexScanTokens contents
-    evaluate (parseProgram tokens)
-    ) :: IO (Either SomeException Program)
-
-  case result of
+  contentsResult <- try (readProgramContents path) :: IO (Either IOException String)
+  case contentsResult of
     Left ex ->
-      pure (Left (ParseError (displayException ex)))
-    Right program ->
-      pure (Right program)
+      pure (Left (ParseError ("could not read program file '" ++ path ++ "': " ++ displayException ex)))
+    Right contents -> do
+      result <- (try $ do
+        let tokens = alexScanTokens contents
+        evaluate (parseProgram tokens)
+        ) :: IO (Either SomeException Program)
+
+      case result of
+        Left ex ->
+          pure (Left (ParseError ("invalid RQL program: " ++ displayException ex)))
+        Right program ->
+          pure (Right program)
+
+readProgramContents :: FilePath -> IO String
+readProgramContents path = do
+  contents <- readFile path
+  _ <- evaluate (length contents)
+  pure contents
 }
