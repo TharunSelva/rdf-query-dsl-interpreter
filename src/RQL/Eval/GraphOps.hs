@@ -67,7 +67,7 @@ matchTriple (TriplePattern ps pp po) (Triple s p o) =
 matchGraph :: TriplePattern -> Graph -> [Binding]
 matchGraph pat g = mapMaybe (matchTriple pat) (Set.toList g)
 
--- Constructing output triples
+-- Constructing triples
 
 instantiateTerm :: PatternTerm -> Binding -> Maybe Term
 instantiateTerm (PConst t) _ = Just t
@@ -193,8 +193,6 @@ groupMin :: VarName -> Iri -> Graph -> Either String Graph
 groupMin = groupByPredicate (`elem` [LT, EQ])
 
 -- Chain: compose two graphs along a shared intermediate node.
--- For each path x -p1-> z in g1 and z -p2-> y in g2, emit x -p2-> y.
--- This collapses x -> z -> y into x -> y, removing the middle node.
 
 chainGraphs :: Graph -> Graph -> Graph
 chainGraphs g1 g2 =

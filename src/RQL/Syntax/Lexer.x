@@ -20,7 +20,6 @@ tokens :-
 [\ \t\n\r\f]+ ;
 "#" [^\n]* ;
 
--- Keywords: must appear before TokIdent
 "let"          { \_ -> TokLet }
 "load"         { \_ -> TokLoad }
 "print"        { \_ -> TokPrint }
@@ -42,7 +41,7 @@ tokens :-
 "<" $irichar+ ">"        { \s -> TokIriRef (tail (init s)) }
 $dquote $strchar* $dquote { \s -> TokStringLit (tail (init s)) }
 
--- unsigned integers only - no leading 0s except the number 0 itself
+-- unsigned integers - no leading 0s except the number 0 itself
 "0"                      { \_ -> TokIntLit 0 }
 $nonzero $digit*         { \s -> TokIntLit (read s) }
 

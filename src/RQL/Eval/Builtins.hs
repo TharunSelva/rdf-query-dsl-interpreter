@@ -7,7 +7,7 @@ import qualified Data.Map as Map
 import RQL.Common.Types
 import RQL.Syntax.AST
 
--- Predicate evaluation
+-- Predicate stuff
 
 lookupBinding :: PatternTerm -> Binding -> Maybe Term
 lookupBinding (PConst t) _ = Just t

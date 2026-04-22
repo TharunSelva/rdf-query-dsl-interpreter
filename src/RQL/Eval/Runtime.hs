@@ -58,7 +58,7 @@ setOpValue _context _graphOp bindingsOp (VBindings left) (VBindings right) =
 setOpValue context _graphOp _bindingsOp _ _ =
   error ("RQL: " ++ context ++ " expects both graphs or both bindings")
 
--- Actual interpreter
+-- Actual evaluator
 
 evalExpr :: Env -> Store -> Expr -> Value
 evalExpr env _store (EVar x) = lookupEnv x env
@@ -136,7 +136,7 @@ execProgram store (Program stmts) =
       let (env', printed) = execStmt env store stmt
       in (env', acc ++ printed)
 
--- IO shell
+-- IO
 
 collectLoads :: Program -> [FilePath]
 collectLoads (Program stmts) = nub (concatMap fromStmt stmts)

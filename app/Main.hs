@@ -32,7 +32,7 @@ runAndMaybeWrite path maybeOutPath = do
       case maybeOutPath of
         Nothing ->
           pure ()
-        --old unsafe version:
+        --old version:
         -- writeFile outPath output
         Just outPath -> do
           writeResult <- try (writeFile outPath output) :: IO (Either IOException ())
