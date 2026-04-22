@@ -1,0 +1,39 @@
+# Sample RQL file for manual syntax highlighting checks
+# Covers comments, strings, IRIs, variables, built-ins, and predicate operators.
+
+let people = load "people"
+let schema = load "schema"
+let inventory = load "inventory"
+
+let matches = match {
+in people { ?s <http://xmlns.com/foaf/0.1/name> ?name }
+in people { ?s <http://xmlns.com/foaf/0.1/age> ?age }
+in inventory { ?s <http://example.com/status> "active" }
+}
+
+let selected = filter matches where ((?age >= 18 && ?age <= 65) || ! (?name != "Alice"))
+let bounded = filter matches where (?age > 17 && ?age < 66 && (?name == "Alice" || ?name != "Bob"))
+
+let typed = construct {
+?s <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://example.com/Adult>
+} from selected
+
+let merged = union people schema
+let overlap = intersection people schema
+let remainder = difference people schema
+let chained = chain bounded typed
+
+# Expression forms that should still highlight cleanly
+print typed
+print merged
+print overlap
+print remainder
+print chained
+print groupmax typed ?s <http://xmlns.com/foaf/0.1/age>
+print groupmin typed ?s <http://xmlns.com/foaf/0.1/age>
+print typeInfer(typed, schema)
+
+# Intentionally invalid RQL examples for manual inspection only:
+# let badPrefixed = match { in people { ?s foaf:name ?name } }
+# let badNegative = filter matches where (?age == -1)
+# let badEscape = load "bad\"name"

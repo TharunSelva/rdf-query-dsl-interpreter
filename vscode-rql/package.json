@@ -1,0 +1,52 @@
+{
+  "name": "vscode-rql",
+  "displayName": "RQL Syntax",
+  "description": "Minimal VS Code syntax highlighting support for the RQL query DSL.",
+  "version": "0.0.1",
+  "publisher": "local",
+  "license": "BSD-3-Clause",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/TharunSelva/rdf-query-dsl-interpreter.git"
+  },
+  "categories": [
+    "Programming Languages"
+  ],
+  "keywords": [
+    "rql",
+    "rdf",
+    "dsl"
+  ],
+  "files": [
+    "LICENSE",
+    "language-configuration.json",
+    "syntaxes/**",
+    "README.md",
+    "examples/**"
+  ],
+  "contributes": {
+    "languages": [
+      {
+        "id": "rql",
+        "aliases": [
+          "RQL",
+          "rql"
+        ],
+        "extensions": [
+          ".rql"
+        ],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "rql",
+        "scopeName": "source.rql",
+        "path": "./syntaxes/rql.tmLanguage.json"
+      }
+    ]
+  }
+}

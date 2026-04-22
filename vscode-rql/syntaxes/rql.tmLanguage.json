@@ -1,0 +1,135 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "RQL",
+  "scopeName": "source.rql",
+  "patterns": [
+    {
+      "include": "#comments"
+    },
+    {
+      "include": "#strings"
+    },
+    {
+      "include": "#iris"
+    },
+    {
+      "include": "#variables"
+    },
+    {
+      "include": "#keywords"
+    },
+    {
+      "include": "#builtins"
+    },
+    {
+      "include": "#numbers"
+    },
+    {
+      "include": "#operators"
+    },
+    {
+      "include": "#punctuation"
+    },
+    {
+      "include": "#identifiers"
+    }
+  ],
+  "repository": {
+    "comments": {
+      "patterns": [
+        {
+          "name": "comment.line.number-sign.rql",
+          "match": "#.*$"
+        }
+      ]
+    },
+    "strings": {
+      "patterns": [
+        {
+          "name": "string.quoted.double.rql",
+          "match": "\"[^\"\\n\\r\\\\]*\""
+        }
+      ]
+    },
+    "iris": {
+      "patterns": [
+        {
+          "name": "constant.other.reference.iri.rql",
+          "match": "<[^ \\t\\n\\r\\f<>\\\\]+>"
+        }
+      ]
+    },
+    "variables": {
+      "patterns": [
+        {
+          "name": "variable.other.readwrite.rql",
+          "match": "\\?[A-Za-z][A-Za-z0-9_]*\\b"
+        }
+      ]
+    },
+    "keywords": {
+      "patterns": [
+        {
+          "name": "keyword.control.rql",
+          "match": "\\b(?:let|match|filter|where|construct|from|in)\\b"
+        }
+      ]
+    },
+    "builtins": {
+      "patterns": [
+        {
+          "name": "support.function.rql",
+          "match": "\\b(?:load|print|union|intersection|difference|groupmax|groupmin|chain|typeInfer)\\b"
+        }
+      ]
+    },
+    "numbers": {
+      "patterns": [
+        {
+          "name": "constant.numeric.integer.rql",
+          "match": "\\b(?:0|[1-9][0-9]*)\\b"
+        }
+      ]
+    },
+    "operators": {
+      "patterns": [
+        {
+          "name": "keyword.operator.rql",
+          "match": ">=|<=|!=|==|&&|\\|\\||[<>!=]"
+        }
+      ]
+    },
+    "punctuation": {
+      "patterns": [
+        {
+          "name": "punctuation.section.block.begin.rql",
+          "match": "\\{"
+        },
+        {
+          "name": "punctuation.section.block.end.rql",
+          "match": "\\}"
+        },
+        {
+          "name": "punctuation.section.group.begin.rql",
+          "match": "\\("
+        },
+        {
+          "name": "punctuation.section.group.end.rql",
+          "match": "\\)"
+        },
+        {
+          "name": "punctuation.separator.comma.rql",
+          "match": ","
+        }
+      ]
+    },
+    "identifiers": {
+      "patterns": [
+        {
+          "name": "variable.other.rql",
+          "match": "\\b[A-Za-z][A-Za-z0-9_]*\\b"
+        }
+      ]
+    }
+  }
+}

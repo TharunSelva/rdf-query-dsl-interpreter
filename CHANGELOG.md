@@ -8,4 +8,8 @@ and this project adheres to the
 
 ## Unreleased
 
+### Added
+
+- Added a self-contained `vscode-rql/` VS Code extension for `.rql` files with language registration, TextMate syntax highlighting, language configuration, and a manual testing example.
+
 ## 0.1.0.0 - YYYY-MM-DD
