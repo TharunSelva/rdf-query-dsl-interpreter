@@ -1,5 +1,6 @@
 module Main (main) where
 
+import Control.Exception (IOException, displayException, try)
 import System.Environment (getArgs, getProgName)
 import System.Exit (exitFailure)
 import System.IO (hPutStrLn, stderr)
@@ -17,19 +18,31 @@ main = do
       runAndMaybeWrite path Nothing
     [path, outPath] ->
       runAndMaybeWrite path (Just outPath)
-    _ -> do
-      hPutStrLn stderr ("Usage: " ++ progName ++ " path/to/file.rql [output-file]")
-      exitFailure
+    _ ->
+      failWith ("Usage: " ++ progName ++ " path/to/file.rql [output-file]")
 
 runAndMaybeWrite :: FilePath -> Maybe FilePath -> IO ()
 runAndMaybeWrite path maybeOutPath = do
   result <- runProgramFile path
   case result of
-    Left msg -> do
-      hPutStrLn stderr msg
-      exitFailure
+    Left msg ->
+      failWith msg
     Right output -> do
       putStr output
       case maybeOutPath of
-        Nothing -> pure ()
-        Just outPath -> writeFile outPath output
+        Nothing ->
+          pure ()
+        --old unsafe version:
+        -- writeFile outPath output
+        Just outPath -> do
+          writeResult <- try (writeFile outPath output) :: IO (Either IOException ())
+          case writeResult of
+            Left ex ->
+              failWith ("could not write '" ++ outPath ++ "': " ++ displayException ex)
+            Right () ->
+              pure ()
+
+failWith :: String -> IO ()
+failWith msg = do
+  hPutStrLn stderr msg
+  exitFailure
