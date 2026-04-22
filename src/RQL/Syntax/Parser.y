@@ -128,6 +128,7 @@ AtomPred :: { Predicate }
   | '(' Pred ')'                  { $2 }
 
 
+{
 -- previous parse error:
 -- parseError :: [Token] -> a
 -- parseError _ = error "Program parse error"
@@ -169,3 +170,4 @@ readProgramContents path = do
   contents <- readFile path
   _ <- evaluate (length contents)
   pure contents
+}
