@@ -9,9 +9,9 @@ Example:
 cd "$(git rev-parse --show-toplevel)\tests\task9"
 ```
 
-## Extended Local Tests for Part 2 (Tasks 6–10)
+## Extended Local Tests for Part 2 (Tasks 6–10) - running each case
  
-Place the `tests2` folder inside your repo root, then run each case from inside its folder:
+In the `tests2` folder inside your repo root, run each case from inside its folder:
  
 ```powershell
 cd tests2/task7/case01_truth_table
