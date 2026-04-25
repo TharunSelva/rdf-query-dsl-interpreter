@@ -1,2 +1,0 @@
-@base <http://example.org/> .
-<s> <age> 42 .

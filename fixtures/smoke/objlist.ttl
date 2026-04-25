@@ -1,2 +1,0 @@
-@base <http://example.org/> .
-<s> <p> <o1>, <o2> .

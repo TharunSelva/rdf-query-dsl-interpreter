@@ -6,42 +6,10 @@ cabal-version: 2.2
 
 name:           rdf-query-dsl-interpreter
 version:        0.1.0.0
-description:    Alex and Happy project.
-homepage:       https://github.com/TharunSelva/rdf-query-dsl-interpreter#readme
-bug-reports:    https://github.com/TharunSelva/rdf-query-dsl-interpreter/issues
 author:         Tharun Selva, Nicholas Escobar Gomez, Sade Sheikh
 maintainer:     Group 67
 license:        BSD-3-Clause
-license-file:   LICENSE
 build-type:     Simple
-extra-source-files:
-    README.md
-    CHANGELOG.md
-    fixtures/smoke/bad_syntax.rql
-    fixtures/smoke/bad_syntax.ttl
-    fixtures/smoke/binding.ttl
-    fixtures/smoke/grouping.ttl
-    fixtures/smoke/groupmax.ttl
-    fixtures/smoke/intlit.ttl
-    fixtures/smoke/join.ttl
-    fixtures/smoke/keyword_a.ttl
-    fixtures/smoke/objlist.ttl
-    fixtures/smoke/plugh.ttl
-    fixtures/smoke/predlist.ttl
-    fixtures/smoke/stronly.ttl
-    fixtures/smoke/task5.expected
-    fixtures/smoke/task5.rql
-    fixtures/smoke/tiny.expected
-    fixtures/smoke/tiny.rql
-    fixtures/smoke/tiny.ttl
-    fixtures/smoke/undeclared_prefix.ttl
-    fixtures/smoke/xyzzy.ttl
-    docs/report-notes.md
-    docs/sources.md
-
-source-repository head
-  type: git
-  location: https://github.com/TharunSelva/rdf-query-dsl-interpreter
 
 library
   exposed-modules:
@@ -87,26 +55,6 @@ executable rdf-query-dsl-interpreter
       Paths_rdf_query_dsl_interpreter
   hs-source-dirs:
       app
-  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
-  build-depends:
-      array
-    , base >=4.7 && <5
-    , containers
-    , directory
-    , filepath
-    , rdf-query-dsl-interpreter
-    , text
-  default-language: Haskell2010
-
-test-suite rdf-query-dsl-interpreter-test
-  type: exitcode-stdio-1.0
-  main-is: SmokeSpec.hs
-  other-modules:
-      Paths_rdf_query_dsl_interpreter
-  autogen-modules:
-      Paths_rdf_query_dsl_interpreter
-  hs-source-dirs:
-      test
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       array

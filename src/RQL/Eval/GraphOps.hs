@@ -206,7 +206,7 @@ chainGraphs g1 g2 =
 -- Type inference
 
 rdfType :: Term
-rdfType = TIri "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+rdfType = TIri "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"  -- link to documentation
 
 inferTypes :: Graph -> Graph -> Graph
 inferTypes schema instances =

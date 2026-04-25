@@ -1,23 +1,12 @@
 name:       rdf-query-dsl-interpreter
 version:    0.1.0.0
-github:     "TharunSelva/rdf-query-dsl-interpreter"
 license:    BSD-3-Clause
 author:     "Tharun Selva, Nicholas Escobar Gomez, Sade Sheikh"
 maintainer: "Group 67"
-# maintainer: "example@example.com"
-# copyright:  "2026 Author name here"
-
-extra-source-files:
-- README.md
-- CHANGELOG.md
-- fixtures/**/*
-- docs/**/*
 
 # Metadata used when publishing your package:
 # synopsis: Short description of your package
 # category: Web
-
-description: Alex and Happy project.
 
 dependencies:
   - base >= 4.7 && < 5
@@ -49,17 +38,6 @@ executables:
   rdf-query-dsl-interpreter:
     main: Main.hs
     source-dirs: app
-    ghc-options:
-      - -threaded
-      - -rtsopts
-      - -with-rtsopts=-N
-    dependencies:
-      - rdf-query-dsl-interpreter
-
-tests:
-  rdf-query-dsl-interpreter-test:
-    main: SmokeSpec.hs
-    source-dirs: test
     ghc-options:
       - -threaded
       - -rtsopts

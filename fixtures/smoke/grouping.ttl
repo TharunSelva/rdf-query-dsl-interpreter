@@ -1,7 +1,0 @@
-<http://example.org/book1> <http://example.org/ont/price> 10 .
-<http://example.org/book1> <http://example.org/ont/price> 15 .
-<http://example.org/book2> <http://example.org/ont/price> 7 .
-<http://example.org/book3> <http://example.org/ont/name> "Alpha" .
-<http://example.org/book3> <http://example.org/ont/name> "Zulu" .
-<http://example.org/book4> <http://example.org/ont/mixed> 1 .
-<http://example.org/book4> <http://example.org/ont/mixed> "oops" .

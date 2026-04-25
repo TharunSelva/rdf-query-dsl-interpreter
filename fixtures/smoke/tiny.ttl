@@ -1,4 +1,0 @@
-@base <http://example.org/> .
-@prefix ont: <http://example.org/ont/> .
-
-<a> ont:name "Alice" .
