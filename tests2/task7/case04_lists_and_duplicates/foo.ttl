@@ -1,0 +1,8 @@
+@base <http://example.org/> .
+@prefix ont: <http://ont.example.org/> .
+@prefix ex: <http://example.org/> .
+
+<jane> ex:p <x>, <y> ; ex:q "Fred" .
+<john> ont:hasName "Bob", "Fred" .
+<bob> ex:nickname "Fred", "Sally" .
+<bob> ex:nickname "Fred" .

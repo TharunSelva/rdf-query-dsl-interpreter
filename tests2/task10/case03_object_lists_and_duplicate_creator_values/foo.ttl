@@ -1,0 +1,7 @@
+@base <http://example.org/> .
+@prefix dc10: <http://purl.org/dc/elements/1.0/> .
+@prefix dc11: <http://purl.org/dc/elements/1.1/> .
+
+<book1> dc10:creator <alice>, <bob>, <bob> .
+<book1> dc11:creator <bob>, <carol> .
+<book2> dc10:creator <dave> ; dc11:creator <dave> .

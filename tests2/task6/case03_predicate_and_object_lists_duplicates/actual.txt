@@ -1,0 +1,3 @@
+<http://example.org/a> <http://example.org/ont/p> <http://example.org/c> .
+<http://example.org/a> <http://example.org/ont/q> "x" .
+<http://example.org/d> <http://example.org/ont/r> 5 .

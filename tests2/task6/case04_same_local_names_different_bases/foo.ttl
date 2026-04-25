@@ -1,0 +1,4 @@
+@base <http://alpha.example/> .
+@prefix ont: <http://example.org/ont/> .
+
+<s> ont:p <o> .

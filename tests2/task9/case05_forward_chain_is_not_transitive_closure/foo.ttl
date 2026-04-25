@@ -1,0 +1,6 @@
+@base <http://example.org/> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+
+<a> owl:sameAs <b> .
+<b> owl:sameAs <c> .
+<c> owl:sameAs <d> .

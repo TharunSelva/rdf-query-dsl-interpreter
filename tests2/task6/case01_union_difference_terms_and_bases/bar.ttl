@@ -1,0 +1,8 @@
+@base <http://bar.example/> .
+@prefix ont: <http://example.org/ont/> .
+
+<barOnly> ont:p "bar" .
+<barUri> ont:p <u2> .
+<sameLocal> ont:p <n1> .
+<http://common.example/dup> ont:p "dup" .
+<http://common.example/removeBoth> ont:p 99 .

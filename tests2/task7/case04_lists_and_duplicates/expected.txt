@@ -1,0 +1,5 @@
+<http://example.org/bob> <http://example.org/nickname> "Fred" .
+<http://example.org/bob> <http://example.org/nickname> "Sally" .
+<http://example.org/jane> <http://example.org/p> <http://example.org/x> .
+<http://example.org/jane> <http://example.org/p> <http://example.org/y> .
+<http://example.org/john> <http://ont.example.org/hasName> "Bob" .

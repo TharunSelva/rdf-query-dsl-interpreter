@@ -1,0 +1,23 @@
+let foo = load "foo"
+
+let sameObject = match {
+  in foo { ?x <http://www.w3.org/2002/07/owl#sameAs> ?y }
+  in foo { ?z <http://www.w3.org/2002/07/owl#sameAs> ?y }
+}
+
+let forward = match {
+  in foo { ?x <http://www.w3.org/2002/07/owl#sameAs> ?y }
+  in foo { ?y <http://www.w3.org/2002/07/owl#sameAs> ?z }
+}
+
+let g1 = construct {
+  ?x <http://www.w3.org/2002/07/owl#sameAs> ?z
+} from sameObject
+
+let g2 = construct {
+  ?x <http://www.w3.org/2002/07/owl#sameAs> ?z
+} from forward
+
+let g = union g1 g2
+
+print g

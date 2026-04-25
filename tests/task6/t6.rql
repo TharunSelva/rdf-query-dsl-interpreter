@@ -1,0 +1,6 @@
+let foo = load "foo"
+let bar = load "bar"
+let baz = load "baz"
+let either = union foo bar
+let result = difference either baz
+print result

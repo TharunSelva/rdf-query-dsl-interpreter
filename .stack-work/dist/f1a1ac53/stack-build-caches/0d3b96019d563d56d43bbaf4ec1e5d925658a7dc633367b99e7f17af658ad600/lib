@@ -1,0 +1,46 @@
+? C:\Users\tharu\AppData\Local\Programs\stack\x86_64-windows\ghc-9.4.8\lib\x86_64-windows-ghc-9.4.8\rts-1.0.2\include\ghcautoconf.h
+: hash: 6d0275813c4a961060770a56d566fd2a79672963e88671d99dd36ea5d48a8f26
+C:\Users\tharu\AppData\Local\Programs\stack\x86_64-windows\ghc-9.4.8\lib\x86_64-windows-ghc-9.4.8\rts-1.0.2\include\ghcconfig.h:
+  hash: 03f4611ae97decc9e8c76c212bf7886d003b29d5c62b43fee6623a799f6e5fdf
+? C:\Users\tharu\AppData\Local\Programs\stack\x86_64-windows\ghc-9.4.8\lib\x86_64-windows-ghc-9.4.8\rts-1.0.2\include\ghcplatform.h
+: hash: 25fec2b37d93a348f35d846578b3561c069462a65603f9aaf66eea2199a24806
+C:\Users\tharu\AppData\Local\Programs\stack\x86_64-windows\ghc-9.4.8\lib\x86_64-windows-ghc-9.4.8\rts-1.0.2\include\ghcversion.h:
+  hash: 4bc88722407a89d1efbfa9c116cd4017af6ea3ff746643032b96cef62782f5dd
+? C:\Users\tharu\OneDrive\Documents\Education\CS Soton\Year 2\Semester 2\PLC\Coursework\plc_cw_repo\.stack-work\dist\f1a1ac53\build\autogen\Paths_rdf_query_dsl_interpreter.hs
+: hash: d144da34d3a74f336f7145b5e947f7146c832610d920d243621d51c16b487993
+? C:\Users\tharu\OneDrive\Documents\Education\CS Soton\Year 2\Semester 2\PLC\Coursework\plc_cw_repo\.stack-work\dist\f1a1ac53\build\autogen\cabal_macros.h
+: hash: 2a6da4fad4c5812d240eb8aa9fb72244b65385dd98148ddf2939312205b13285
+C:\Users\tharu\OneDrive\Documents\Education\CS Soton\Year 2\Semester 2\PLC\Coursework\plc_cw_repo\package.yaml:
+  hash: f781028e0c055abfac8449ddc9cadc282cc92d15f32a1bd4b624702885ae6126
+? C:\Users\tharu\OneDrive\Documents\Education\CS Soton\Year 2\Semester 2\PLC\Coursework\plc_cw_repo\rdf-query-dsl-interpreter.cabal
+: hash: f1c72fa8a6ac71c1d9eee6aedb8b49a7cef0a604833056d00aa7e2307239fb19
+C:\Users\tharu\OneDrive\Documents\Education\CS Soton\Year 2\Semester 2\PLC\Coursework\plc_cw_repo\src\RQL\Common\Contracts.hs:
+  hash: 0a83ba3812f72d0007ea36d2d3f6f83c179460344390115b622c1ba7602d6800
+C:\Users\tharu\OneDrive\Documents\Education\CS Soton\Year 2\Semester 2\PLC\Coursework\plc_cw_repo\src\RQL\Common\Errors.hs:
+  hash: 59c4569b9b50f0a06293592beee3cf91333338749bc7bf859f1019fdbab6efe7
+C:\Users\tharu\OneDrive\Documents\Education\CS Soton\Year 2\Semester 2\PLC\Coursework\plc_cw_repo\src\RQL\Common\Types.hs:
+  hash: 03161b646dbba4dc61ce9c8854e68b986178c4e22ae55dd7d4d0950872de4d0c
+C:\Users\tharu\OneDrive\Documents\Education\CS Soton\Year 2\Semester 2\PLC\Coursework\plc_cw_repo\src\RQL\Eval\Builtins.hs:
+  hash: b659ea7d72a39236628b5ad506781d1bef02257ad6bc726e4f52bade16617040
+C:\Users\tharu\OneDrive\Documents\Education\CS Soton\Year 2\Semester 2\PLC\Coursework\plc_cw_repo\src\RQL\Eval\GraphOps.hs:
+  hash: 11c936901d34597dd7348d2634d661068007748d7323f6890cb20b57fac3c2c2
+C:\Users\tharu\OneDrive\Documents\Education\CS Soton\Year 2\Semester 2\PLC\Coursework\plc_cw_repo\src\RQL\Eval\Runtime.hs:
+  hash: 0bff58d8b770867d379a0636d0750e0285fd8a13c3b09a3fd84a7fa4c742aeae
+C:\Users\tharu\OneDrive\Documents\Education\CS Soton\Year 2\Semester 2\PLC\Coursework\plc_cw_repo\src\RQL\Syntax\AST.hs:
+  hash: 7412d239550132c0a6ea639b9d429bb181e81dbc3fc1b92f3a5e46bbcebed845
+C:\Users\tharu\OneDrive\Documents\Education\CS Soton\Year 2\Semester 2\PLC\Coursework\plc_cw_repo\src\RQL\Syntax\Lexer.x:
+  hash: 763332360acd6d01330fc0f8e3e1f291ba897bfa5b40e5325e0557edcd530649
+C:\Users\tharu\OneDrive\Documents\Education\CS Soton\Year 2\Semester 2\PLC\Coursework\plc_cw_repo\src\RQL\Syntax\Parser.y:
+  hash: c9e8fb7c87b0471b5925fb3e7f043af3360583bea9d8bf723412eecc57d54116
+C:\Users\tharu\OneDrive\Documents\Education\CS Soton\Year 2\Semester 2\PLC\Coursework\plc_cw_repo\src\RQL\Turtle\AST.hs:
+  hash: 3572eaed01fe66e896e15b88fc2008a0b86892034438744e09c6ab0bf02cadf4
+C:\Users\tharu\OneDrive\Documents\Education\CS Soton\Year 2\Semester 2\PLC\Coursework\plc_cw_repo\src\RQL\Turtle\Lexer.x:
+  hash: fdc32d56fef0e1d599ccd2afa49baaf68bedf274a4abefa2ee4a789d6cbbd740
+C:\Users\tharu\OneDrive\Documents\Education\CS Soton\Year 2\Semester 2\PLC\Coursework\plc_cw_repo\src\RQL\Turtle\Loader.hs:
+  hash: e1782a1ede16abb5e611e850f7394ae685b8dbadadc4650eec61b63e8c378a49
+C:\Users\tharu\OneDrive\Documents\Education\CS Soton\Year 2\Semester 2\PLC\Coursework\plc_cw_repo\src\RQL\Turtle\Lower.hs:
+  hash: 36c85a5b6f47d49314fb87c26291865404e4ee7cddb887206497f2003304fd77
+C:\Users\tharu\OneDrive\Documents\Education\CS Soton\Year 2\Semester 2\PLC\Coursework\plc_cw_repo\src\RQL\Turtle\Parser.y:
+  hash: 9fb4555ee87dd1f7ec20f5aa991c20e4916a8b421c3f28706bfc31df71eedabe
+C:\Users\tharu\OneDrive\Documents\Education\CS Soton\Year 2\Semester 2\PLC\Coursework\plc_cw_repo\src\RQL\Turtle\Render.hs:
+  hash: b465704cd39e9e65cd1fd5fefad50d4173044d90e57be570e264cc2869cb663e

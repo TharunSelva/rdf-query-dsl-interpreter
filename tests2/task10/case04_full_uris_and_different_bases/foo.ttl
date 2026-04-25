@@ -1,0 +1,7 @@
+@base <http://books.example/> .
+@prefix dc10: <http://purl.org/dc/elements/1.0/> .
+@prefix dc11: <http://purl.org/dc/elements/1.1/> .
+
+<localBook> <http://purl.org/dc/elements/1.0/creator> <localAuthor> .
+<http://other.example/book> dc11:creator <http://other.example/author> .
+<wrong> <http://purl.org/dc/elements/1.0/creators> <ignored> .

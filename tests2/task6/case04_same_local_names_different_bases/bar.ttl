@@ -1,0 +1,4 @@
+@base <http://beta.example/> .
+@prefix ont: <http://example.org/ont/> .
+
+<s> ont:p <o> .

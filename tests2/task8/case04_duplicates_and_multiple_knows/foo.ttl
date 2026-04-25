@@ -1,0 +1,7 @@
+@base <http://example.org/> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+
+<alice> rdf:type foaf:Person, foaf:Person ; foaf:knows <bob>, <carol> .
+<bob> rdf:type foaf:Person ; foaf:knows <nmg>, <nmg> .
+<carol> rdf:type foaf:Person ; foaf:knows <dave> .

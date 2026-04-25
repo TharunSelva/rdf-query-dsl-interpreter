@@ -1,0 +1,9 @@
+let foo = load "foo"
+let m = match {
+in foo { ?s ?p ?o }
+}
+let one = filter m where (((?s == <http://example.org/jane> && !(?p == <http://ont.example.org/hasName>) && !((?o == "Fred") || (?o == "Sally"))) || (!(?s == <http://example.org/jane>) && ?p == <http://ont.example.org/hasName> && !((?o == "Fred") || (?o == "Sally"))) || (!(?s == <http://example.org/jane>) && !(?p == <http://ont.example.org/hasName>) && ((?o == "Fred") || (?o == "Sally")))) )
+let g = construct {
+?s ?p ?o
+} from one
+print g

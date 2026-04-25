@@ -1,0 +1,4 @@
+<http://bar.example/barOnly> <http://example.org/ont/p> "bar" .
+<http://bar.example/sameLocal> <http://example.org/ont/p> <http://bar.example/n1> .
+<http://foo.example/dupBoth> <http://example.org/ont/p> 7 .
+<http://foo.example/fooOnly> <http://example.org/ont/p> "foo" .

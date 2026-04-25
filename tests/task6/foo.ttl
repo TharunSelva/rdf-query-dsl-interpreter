@@ -1,0 +1,7 @@
+@base <http://foo.example/> .
+@prefix ex: <http://example.org/ont/> .
+
+<sameLocal> ex:p <n1> .
+<fooOnly> ex:p "foo" .
+<dupBoth> ex:p 7 .
+<removeLiteral> ex:name "gone" .

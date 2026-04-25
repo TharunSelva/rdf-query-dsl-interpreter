@@ -1,0 +1,21 @@
+let foo = load "foo"
+
+let dc10 = match {
+  in foo { ?x <http://purl.org/dc/elements/1.0/creator> ?y }
+}
+
+let dc11 = match {
+  in foo { ?x <http://purl.org/dc/elements/1.1/creator> ?y }
+}
+
+let g10 = construct {
+  ?x <http://purl.org/dc/terms/creator> ?y
+} from dc10
+
+let g11 = construct {
+  ?x <http://purl.org/dc/terms/creator> ?y
+} from dc11
+
+let g = union g10 g11
+
+print g

@@ -1,0 +1,6 @@
+@base <http://example.org/> .
+@prefix ont: <http://example.org/ont/> .
+
+<a> ont:p "x" .
+<b> ont:p 5 .
+<c> ont:p <d> .

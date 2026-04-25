@@ -1,0 +1,2 @@
+<http://books.example/localBook> <http://purl.org/dc/terms/creator> <http://books.example/localAuthor> .
+<http://other.example/book> <http://purl.org/dc/terms/creator> <http://other.example/author> .

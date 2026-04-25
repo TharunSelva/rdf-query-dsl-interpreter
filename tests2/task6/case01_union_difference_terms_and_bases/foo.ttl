@@ -1,0 +1,10 @@
+@base <http://foo.example/> .
+@prefix ont: <http://example.org/ont/> .
+
+<fooOnly> ont:p "foo" .
+<fooUri> ont:p <u1> .
+<fooInt> ont:p 10 .
+<removeMe> ont:p "gone" .
+<sameLocal> ont:p <n1> .
+<http://common.example/dup> ont:p "dup" .
+<http://common.example/removeBoth> ont:p 99 .

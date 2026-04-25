@@ -1,0 +1,9 @@
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix ex: <http://example.org/> .
+
+ex:a owl:sameAs ex:b .
+ex:c owl:sameAs ex:b .
+ex:b owl:sameAs ex:d .
+ex:g owl:sameAs ex:h .
+ex:h owl:sameAs ex:i .
+ex:e owl:sameAs ex:f .

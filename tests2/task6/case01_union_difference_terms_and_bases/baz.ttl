@@ -1,0 +1,7 @@
+@base <http://foo.example/> .
+@prefix ont: <http://example.org/ont/> .
+
+<removeMe> ont:p "gone" .
+<sameLocal> ont:p <n1> .
+<http://common.example/removeBoth> ont:p 99 .
+<notInUnion> ont:p "ignore" .

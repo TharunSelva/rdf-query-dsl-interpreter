@@ -1,0 +1,4 @@
+<http://example.org/book1> <http://purl.org/dc/terms/creator> <http://example.org/alice> .
+<http://example.org/book2> <http://purl.org/dc/terms/creator> <http://example.org/bob> .
+<http://example.org/book3> <http://purl.org/dc/terms/creator> <http://example.org/carol> .
+<http://example.org/book3> <http://purl.org/dc/terms/creator> <http://example.org/dave> .

@@ -1,0 +1,2 @@
+<http://alpha.example/s> <http://example.org/ont/p> <http://alpha.example/o> .
+<http://beta.example/s> <http://example.org/ont/p> <http://beta.example/o> .

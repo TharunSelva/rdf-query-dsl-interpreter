@@ -1,0 +1,7 @@
+<http://bar.example/barOnly> <http://example.org/ont/p> "bar" .
+<http://bar.example/barUri> <http://example.org/ont/p> <http://bar.example/u2> .
+<http://bar.example/sameLocal> <http://example.org/ont/p> <http://bar.example/n1> .
+<http://common.example/dup> <http://example.org/ont/p> "dup" .
+<http://foo.example/fooInt> <http://example.org/ont/p> 10 .
+<http://foo.example/fooOnly> <http://example.org/ont/p> "foo" .
+<http://foo.example/fooUri> <http://example.org/ont/p> <http://foo.example/u1> .

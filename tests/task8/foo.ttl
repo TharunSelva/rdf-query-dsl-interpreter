@@ -1,0 +1,10 @@
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix ex: <http://example.org/> .
+
+ex:alice rdf:type foaf:Person ; foaf:knows ex:nmg .
+ex:bob rdf:type foaf:Person .
+ex:carol rdf:type foaf:Person ; foaf:knows ex:someoneElse .
+ex:dave rdf:type foaf:Person ; foaf:knows ex:nmg .
+ex:eve rdf:type foaf:Agent .
+ex:nmg rdf:type foaf:Person .
